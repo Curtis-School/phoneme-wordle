@@ -1,10 +1,16 @@
 import { PagePlaceholder } from "@/components/ui/PagePlaceholder";
+import { ThemeSetting } from "@/components/settings/ThemeSetting";
+import { getTheme } from "@/lib/theme-cookie";
 
-export default function SettingsPage() {
+export default async function SettingsPage() {
+  const theme = await getTheme();
+
   return (
     <PagePlaceholder
       title="Settings"
-      intro="Light / dark theme (stored in a cookie) and layout preferences will live here. Theme tokens are already defined; the toggle is future work."
-    />
+      intro="Manage how the activity builder looks and behaves. More layout preferences will live here."
+    >
+      <ThemeSetting initialTheme={theme} />
+    </PagePlaceholder>
   );
 }

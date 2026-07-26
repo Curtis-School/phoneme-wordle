@@ -15,7 +15,3 @@ export function isTheme(value: unknown): value is Theme {
 export function normalizeTheme(value: unknown): Theme {
   return isTheme(value) ? value : DEFAULT_THEME;
 }
-
-export function oppositeTheme(theme: Theme): Theme {
-  return theme === "dark" ? "light" : "dark";
-}

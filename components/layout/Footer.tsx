@@ -9,7 +9,7 @@ export function Footer() {
           {" · Student #"}
           {SITE.studentNumber}
         </p>
-        <p>{SITE.assessment} · Frontend only</p>
+        <p>{SITE.assessment}</p>
       </div>
     </footer>
   );

@@ -12,6 +12,12 @@
   --accent: #6cba7f;
   --on-primary: #ffffff;
   --border: #cfe6ca;
+  --correct: #2f855a;
+  --correct-foreground: #ffffff;
+  --present: #b7791f;
+  --present-foreground: #ffffff;
+  --absent: #6b7d72;
+  --absent-foreground: #ffffff;
   color-scheme: light;
 }
 
@@ -26,6 +32,12 @@
   --accent: #2f6f47;
   --on-primary: #04120a;
   --border: #1e3320;
+  --correct: #48bb78;
+  --correct-foreground: #04120a;
+  --present: #d69e2e;
+  --present-foreground: #1a1200;
+  --absent: #3a4a40;
+  --absent-foreground: #cfe0d4;
   color-scheme: dark;
 }
 
@@ -40,6 +52,12 @@
   --color-accent: var(--accent);
   --color-on-primary: var(--on-primary);
   --color-border: var(--border);
+  --color-correct: var(--correct);
+  --color-correct-foreground: var(--correct-foreground);
+  --color-present: var(--present);
+  --color-present-foreground: var(--present-foreground);
+  --color-absent: var(--absent);
+  --color-absent-foreground: var(--absent-foreground);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }

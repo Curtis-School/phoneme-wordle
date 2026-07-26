@@ -1,21 +1,32 @@
 import { PhonemeTile } from "@/components/phoneme/PhonemeTile";
-
-export type GuessState = "correct" | "present" | "absent";
+import type { GuessState } from "@/lib/wordle";
 
 export type GuessTile = {
-  label: string;
-  ipa?: string;
+  symbol: string;
+  reveal?: string;
   state: GuessState;
+};
+
+type ActiveTile = {
+  symbol: string;
+  reveal?: string;
 };
 
 type WordleBoardProps = {
   length: number;
   rows: number;
   guesses?: GuessTile[][];
+  current?: readonly ActiveTile[];
 };
 
-export function WordleBoard({ length, rows, guesses = [] }: WordleBoardProps) {
-  const emptyRows = Math.max(0, rows - guesses.length);
+export function WordleBoard({
+  length,
+  rows,
+  guesses = [],
+  current = [],
+}: WordleBoardProps) {
+  const showActive = guesses.length < rows;
+  const emptyRows = Math.max(0, rows - guesses.length - (showActive ? 1 : 0));
 
   return (
     <div
@@ -28,14 +39,31 @@ export function WordleBoard({ length, rows, guesses = [] }: WordleBoardProps) {
           {guess.map((tile, colIndex) => (
             <PhonemeTile
               key={colIndex}
-              label={tile.label}
-              ipa={tile.ipa}
+              label={tile.symbol}
+              reveal={tile.reveal}
               tone={tile.state}
               size="lg"
             />
           ))}
         </div>
       ))}
+
+      {showActive && (
+        <div role="row" className="flex gap-1.5">
+          {Array.from({ length }).map((_, colIndex) => {
+            const tile = current[colIndex];
+            return (
+              <PhonemeTile
+                key={colIndex}
+                label={tile?.symbol}
+                reveal={tile?.reveal}
+                tone="default"
+                size="lg"
+              />
+            );
+          })}
+        </div>
+      )}
 
       {Array.from({ length: emptyRows }).map((_, rowIndex) => (
         <div role="row" key={`empty-${rowIndex}`} className="flex gap-1.5">

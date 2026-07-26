@@ -16,7 +16,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Phoneme Wordle — Phoneme Activity Builder",
+  title: "Phoneme Activity Builder",
   description:
     "A frontend builder for Speech Pathology teachers to create and preview phoneme-based Wordle and Word Search activities.",
 };

@@ -12,6 +12,7 @@ export type PhonemeSize = "sm" | "md" | "lg";
 type PhonemeTileProps = {
   label?: string;
   ipa?: string;
+  reveal?: string;
   tone?: PhonemeTone;
   size?: PhonemeSize;
   className?: string;
@@ -34,14 +35,28 @@ const SIZE_CLASSES: Record<PhonemeSize, string> = {
 export function PhonemeTile({
   label,
   ipa,
+  reveal,
   tone = "default",
   size = "md",
   className = "",
 }: PhonemeTileProps) {
+  const base = `flex select-none flex-col items-center justify-center rounded-lg font-semibold leading-none ${TONE_CLASSES[tone]} ${SIZE_CLASSES[size]} ${className}`;
+
+  if (reveal) {
+    return (
+      <div title={reveal} className={`group relative ${base}`}>
+        <span className="tracking-tight transition-opacity group-hover:opacity-0">
+          {label}
+        </span>
+        <span className="absolute inset-0 flex items-center justify-center uppercase opacity-0 transition-opacity group-hover:opacity-100">
+          {reveal}
+        </span>
+      </div>
+    );
+  }
+
   return (
-    <div
-      className={`flex select-none flex-col items-center justify-center rounded-lg font-semibold leading-none ${TONE_CLASSES[tone]} ${SIZE_CLASSES[size]} ${className}`}
-    >
+    <div className={base}>
       <span className="uppercase tracking-tight">{label}</span>
       {ipa && (
         <span className="mt-0.5 text-[0.6em] font-normal opacity-70">

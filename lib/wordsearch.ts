@@ -4,13 +4,16 @@ type Direction = { dr: number; dc: number };
 
 export type WordSearchCell = {
   label: string;
+  ipa: string;
+  english: string;
   isSolution: boolean;
 };
 
+export type Cell = { row: number; col: number };
+
 export type PlacedWord = {
   english: string;
-  labels: string[];
-  cells: { row: number; col: number }[];
+  cells: Cell[];
 };
 
 export type GeneratedWordSearch = {
@@ -24,10 +27,6 @@ const DIRECTIONS: readonly Direction[] = [
   { dr: 1, dc: 0 },
   { dr: 1, dc: 1 },
   { dr: -1, dc: 1 },
-  { dr: 0, dc: -1 },
-  { dr: -1, dc: 0 },
-  { dr: -1, dc: -1 },
-  { dr: 1, dc: -1 },
 ];
 
 function mulberry32(seed: number): () => number {
@@ -51,20 +50,20 @@ function shuffled<T>(items: readonly T[], rng: () => number): T[] {
 }
 
 function place(
-  labels: readonly string[],
-  grid: (string | null)[][],
+  phonemes: readonly Phoneme[],
+  grid: (Phoneme | null)[][],
   size: number,
   startRow: number,
   startCol: number,
   dir: Direction,
-): { row: number; col: number }[] | null {
-  const cells: { row: number; col: number }[] = [];
-  for (let i = 0; i < labels.length; i++) {
+): Cell[] | null {
+  const cells: Cell[] = [];
+  for (let i = 0; i < phonemes.length; i++) {
     const row = startRow + dir.dr * i;
     const col = startCol + dir.dc * i;
     if (row < 0 || row >= size || col < 0 || col >= size) return null;
     const existing = grid[row][col];
-    if (existing !== null && existing !== labels[i]) return null;
+    if (existing !== null && existing.ipa !== phonemes[i].ipa) return null;
     cells.push({ row, col });
   }
   return cells;
@@ -77,8 +76,8 @@ export function generateWordSearch(
   seed = 1,
 ): GeneratedWordSearch {
   const rng = mulberry32(seed);
-  const labelGrid: (string | null)[][] = Array.from({ length: size }, () =>
-    Array<string | null>(size).fill(null),
+  const phonemeGrid: (Phoneme | null)[][] = Array.from({ length: size }, () =>
+    Array<Phoneme | null>(size).fill(null),
   );
   const placed: PlacedWord[] = [];
 
@@ -88,18 +87,17 @@ export function generateWordSearch(
   }));
 
   for (const word of words) {
-    const labels = word.phonemes.map((p) => p.label);
-    if (labels.length > size) continue;
+    if (word.phonemes.length > size) continue;
 
     let done = false;
     for (const dir of shuffled(DIRECTIONS, rng)) {
       for (const { row, col } of shuffled(positions, rng)) {
-        const cells = place(labels, labelGrid, size, row, col, dir);
+        const cells = place(word.phonemes, phonemeGrid, size, row, col, dir);
         if (!cells) continue;
         cells.forEach((cell, i) => {
-          labelGrid[cell.row][cell.col] = labels[i];
+          phonemeGrid[cell.row][cell.col] = word.phonemes[i];
         });
-        placed.push({ english: word.english, labels, cells });
+        placed.push({ english: word.english, cells });
         done = true;
         break;
       }
@@ -107,17 +105,62 @@ export function generateWordSearch(
     }
   }
 
-  const fillerLabels = fillers.map((p) => p.label);
-  const grid: WordSearchCell[][] = labelGrid.map((row) =>
-    row.map((label) => {
-      if (label !== null) return { label, isSolution: true };
-      const filler =
-        fillerLabels.length > 0
-          ? fillerLabels[Math.floor(rng() * fillerLabels.length)]
-          : "·";
-      return { label: filler, isSolution: false };
+  const fallback: Phoneme = { ipa: "·", label: "·", example: "", english: "·" };
+  const grid: WordSearchCell[][] = phonemeGrid.map((row) =>
+    row.map((cellPhoneme) => {
+      const phoneme =
+        cellPhoneme ??
+        (fillers.length > 0
+          ? fillers[Math.floor(rng() * fillers.length)]
+          : fallback);
+      return {
+        label: phoneme.label,
+        ipa: phoneme.ipa,
+        english: phoneme.english,
+        isSolution: cellPhoneme !== null,
+      };
     }),
   );
 
   return { size, grid, words: placed };
+}
+
+export function lineBetween(start: Cell, end: Cell): Cell[] | null {
+  const dr = end.row - start.row;
+  const dc = end.col - start.col;
+  const stepRow = Math.abs(dr);
+  const stepCol = Math.abs(dc);
+  const straight = dr === 0 || dc === 0 || stepRow === stepCol;
+  if (!straight) return null;
+
+  const length = Math.max(stepRow, stepCol);
+  const dirRow = Math.sign(dr);
+  const dirCol = Math.sign(dc);
+  const cells: Cell[] = [];
+  for (let i = 0; i <= length; i++) {
+    cells.push({ row: start.row + dirRow * i, col: start.col + dirCol * i });
+  }
+  return cells;
+}
+
+function sameCells(a: readonly Cell[], b: readonly Cell[]): boolean {
+  if (a.length !== b.length) return false;
+  const forward = a.every(
+    (cell, i) => cell.row === b[i].row && cell.col === b[i].col,
+  );
+  if (forward) return true;
+  return a.every((cell, i) => {
+    const j = b.length - 1 - i;
+    return cell.row === b[j].row && cell.col === b[j].col;
+  });
+}
+
+export function matchesPlacement(
+  path: readonly Cell[],
+  placements: readonly PlacedWord[],
+): PlacedWord | null {
+  for (const placement of placements) {
+    if (sameCells(path, placement.cells)) return placement;
+  }
+  return null;
 }

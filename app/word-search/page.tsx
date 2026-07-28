@@ -1,7 +1,7 @@
 import { PagePlaceholder } from "@/components/ui/PagePlaceholder";
 import { PhonemeTile } from "@/components/phoneme/PhonemeTile";
-import { WordSearchGrid } from "@/components/wordsearch/WordSearchGrid";
-import { WordSearchClues } from "@/components/wordsearch/WordSearchClues";
+import { WordSearchGame } from "@/components/wordsearch/WordSearchGame";
+import { ExportButton } from "@/components/wordsearch/ExportButton";
 import {
   getFixedWordSearchConfig,
   getFixedWordSearchWords,
@@ -22,7 +22,7 @@ export default function WordSearchPage() {
   return (
     <PagePlaceholder
       title="Phoneme Word Search"
-      intro="Find every word that features the target sound."
+      intro="Find every word that features the target sound by dragging across the grid, then export a self-contained copy that plays offline."
     >
       <div className="flex flex-col gap-8">
         <section className="flex flex-wrap items-center gap-3 rounded-2xl border border-border bg-surface p-4">
@@ -39,20 +39,22 @@ export default function WordSearchPage() {
         </section>
 
         <div className="flex flex-col gap-8 lg:flex-row lg:items-start lg:gap-10">
-          <section className="flex flex-col gap-3">
-            <h2 className="text-sm font-semibold text-foreground">
-              Answer key — target words highlighted
-            </h2>
-            <div className="overflow-x-auto">
-              <WordSearchGrid puzzle={puzzle} showSolution />
-            </div>
-          </section>
+          <WordSearchGame puzzle={puzzle} words={words} />
 
-          <section className="flex flex-col gap-3 lg:min-w-72">
-            <h2 className="text-sm font-semibold text-foreground">
-              Words to find
-            </h2>
-            <WordSearchClues words={words} />
+          <section className="flex flex-col gap-3 rounded-xl border border-border bg-surface p-4 lg:w-72">
+            <div className="flex flex-col gap-0.5">
+              <h2 className="text-sm font-semibold text-foreground">
+                Take-home copy
+              </h2>
+              <p className="text-xs text-muted">
+                Download a self-contained HTML word search that plays offline.
+              </p>
+            </div>
+            <ExportButton
+              phoneme={config.phoneme}
+              words={words}
+              puzzle={puzzle}
+            />
           </section>
         </div>
       </div>

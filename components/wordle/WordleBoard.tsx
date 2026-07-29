@@ -1,15 +1,18 @@
 import { PhonemeTile } from "@/components/phoneme/PhonemeTile";
 import type { GuessState } from "@/lib/wordle";
+import type { SymbolDisplay } from "@/lib/types";
 
 export type GuessTile = {
   symbol: string;
   reveal?: string;
+  hint?: string;
   state: GuessState;
 };
 
 type ActiveTile = {
   symbol: string;
   reveal?: string;
+  hint?: string;
 };
 
 type WordleBoardProps = {
@@ -17,6 +20,9 @@ type WordleBoardProps = {
   rows: number;
   guesses?: GuessTile[][];
   current?: readonly ActiveTile[];
+  display?: SymbolDisplay;
+  showTooltip?: boolean;
+  solvedRow?: number | null;
 };
 
 export function WordleBoard({
@@ -24,6 +30,9 @@ export function WordleBoard({
   rows,
   guesses = [],
   current = [],
+  display = "ipa",
+  showTooltip = true,
+  solvedRow = null,
 }: WordleBoardProps) {
   const showActive = guesses.length < rows;
   const emptyRows = Math.max(0, rows - guesses.length - (showActive ? 1 : 0));
@@ -41,7 +50,11 @@ export function WordleBoard({
               key={colIndex}
               label={tile.symbol}
               reveal={tile.reveal}
+              hint={tile.hint}
               tone={tile.state}
+              display={display}
+              showTooltip={showTooltip}
+              revealed={solvedRow === rowIndex}
               size="lg"
             />
           ))}
@@ -57,7 +70,10 @@ export function WordleBoard({
                 key={colIndex}
                 label={tile?.symbol}
                 reveal={tile?.reveal}
+                hint={tile?.hint}
                 tone="default"
+                display={display}
+                showTooltip={showTooltip}
                 size="lg"
               />
             );

@@ -1,16 +1,22 @@
-import { PagePlaceholder } from "@/components/ui/PagePlaceholder";
+import { PageShell } from "@/components/ui/PageShell";
 import { ThemeSetting } from "@/components/settings/ThemeSetting";
-import { getTheme } from "@/lib/theme-cookie";
+import { SymbolDisplaySetting } from "@/components/settings/SymbolDisplaySetting";
+import { TooltipSetting } from "@/components/settings/TooltipSetting";
+import { getActivitySettings } from "@/lib/settings-cookie";
 
 export default async function SettingsPage() {
-  const theme = await getTheme();
+  const settings = await getActivitySettings();
 
   return (
-    <PagePlaceholder
+    <PageShell
       title="Settings"
-      intro="Manage how the activity builder looks and behaves. More layout preferences will live here."
+      intro="Manage how the activity builder looks and behaves. These preferences apply to the live activities and the HTML files you export."
     >
-      <ThemeSetting initialTheme={theme} />
-    </PagePlaceholder>
+      <div className="flex flex-col gap-4">
+        <ThemeSetting initialTheme={settings.theme} />
+        <SymbolDisplaySetting initialDisplay={settings.symbolDisplay} />
+        <TooltipSetting initialShowTooltips={settings.showTooltips} />
+      </div>
+    </PageShell>
   );
 }

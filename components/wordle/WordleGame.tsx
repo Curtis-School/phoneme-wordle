@@ -1,17 +1,19 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import type { Phoneme, WordleConfig } from "@/lib/types";
+import type { ActivitySettings, Phoneme, WordleConfig } from "@/lib/types";
 import { evaluateGuess, isSolved } from "@/lib/wordle";
+import { phonemeHint } from "@/lib/phoneme";
 import { WordleBoard, type GuessTile } from "./WordleBoard";
 import { PhonemeKeyboard } from "./PhonemeKeyboard";
 
 type WordleGameProps = {
   config: WordleConfig;
   keys: readonly Phoneme[];
+  settings: ActivitySettings;
 };
 
-export function WordleGame({ config, keys }: WordleGameProps) {
+export function WordleGame({ config, keys, settings }: WordleGameProps) {
   const len = config.word.length;
   const rows = config.maxGuesses;
 
@@ -43,6 +45,7 @@ export function WordleGame({ config, keys }: WordleGameProps) {
         return guess.map((ipa, i) => ({
           symbol: ipa,
           reveal: byIpa[ipa]?.english,
+          hint: byIpa[ipa] ? phonemeHint(byIpa[ipa]) : undefined,
           state: states[i],
         }));
       }),
@@ -91,7 +94,10 @@ export function WordleGame({ config, keys }: WordleGameProps) {
   const currentTiles = current.map((ipa) => ({
     symbol: ipa,
     reveal: byIpa[ipa]?.english,
+    hint: byIpa[ipa] ? phonemeHint(byIpa[ipa]) : undefined,
   }));
+
+  const solvedRow = solved ? guesses.length - 1 : null;
 
   return (
     <div className="flex flex-col items-start gap-5">
@@ -107,6 +113,9 @@ export function WordleGame({ config, keys }: WordleGameProps) {
         rows={rows}
         guesses={evaluated}
         current={currentTiles}
+        display={settings.symbolDisplay}
+        showTooltip={settings.showTooltips}
+        solvedRow={solvedRow}
       />
       <PhonemeKeyboard
         keys={keys}
@@ -114,6 +123,8 @@ export function WordleGame({ config, keys }: WordleGameProps) {
         onEnter={submit}
         onBackspace={backspace}
         disabled={done}
+        display={settings.symbolDisplay}
+        showTooltip={settings.showTooltips}
       />
     </div>
   );

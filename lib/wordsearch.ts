@@ -6,6 +6,7 @@ export type WordSearchCell = {
   label: string;
   ipa: string;
   english: string;
+  example: string;
   isSolution: boolean;
 };
 
@@ -117,6 +118,7 @@ export function generateWordSearch(
         label: phoneme.label,
         ipa: phoneme.ipa,
         english: phoneme.english,
+        example: phoneme.example,
         isSolution: cellPhoneme !== null,
       };
     }),

@@ -2,6 +2,14 @@ export type Difficulty = "easy" | "medium" | "hard";
 
 export type Theme = "light" | "dark";
 
+export type SymbolDisplay = "ipa" | "english";
+
+export type ActivitySettings = {
+  theme: Theme;
+  symbolDisplay: SymbolDisplay;
+  showTooltips: boolean;
+};
+
 export type Phoneme = {
   ipa: string;
   label: string;

@@ -1,6 +1,6 @@
 "use client";
 
-import type { Phoneme, PhonemeWord } from "@/lib/types";
+import type { ActivitySettings, Phoneme, PhonemeWord } from "@/lib/types";
 import type { GeneratedWordSearch } from "@/lib/wordsearch";
 import { buildWordSearchHtml } from "@/lib/html-export/word-search-template";
 import { downloadHtml } from "@/lib/html-export/download";
@@ -9,11 +9,17 @@ type ExportButtonProps = {
   phoneme: Phoneme;
   words: readonly PhonemeWord[];
   puzzle: GeneratedWordSearch;
+  settings: ActivitySettings;
 };
 
-export function ExportButton({ phoneme, words, puzzle }: ExportButtonProps) {
+export function ExportButton({
+  phoneme,
+  words,
+  puzzle,
+  settings,
+}: ExportButtonProps) {
   function handleExport() {
-    const html = buildWordSearchHtml(phoneme, words, puzzle);
+    const html = buildWordSearchHtml(phoneme, words, puzzle, settings);
     downloadHtml(`phoneme-word-search-${phoneme.english}.html`, html);
   }
 

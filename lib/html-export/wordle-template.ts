@@ -1,4 +1,5 @@
-import type { Phoneme, WordleConfig } from "@/lib/types";
+import type { ActivitySettings, Phoneme, WordleConfig } from "@/lib/types";
+import { phonemeHint } from "@/lib/phoneme";
 import { renderDocument, serializeData } from "./shell";
 
 const GAME_STYLES = `
@@ -23,6 +24,12 @@ const GAME_STYLES = `
 }
 .tile:hover .glyph, .key:hover .glyph { opacity: 0; }
 .tile:hover .reveal, .key:hover .reveal { opacity: 1; }
+.english .glyph { opacity: 0; }
+.english .reveal { opacity: 1; }
+.english:hover .glyph { opacity: 1; }
+.english:hover .reveal { opacity: 0; }
+.revealed .glyph { opacity: 0 !important; }
+.revealed .reveal { opacity: 1 !important; }
 .message { min-height: 24px; font-weight: 600; }
 .keyboard { display: flex; align-items: flex-start; justify-content: center; gap: 6px; }
 .keys { display: flex; flex-direction: column; gap: 6px; }
@@ -42,8 +49,9 @@ const GAME_STYLES = `
 
 const GAME_SCRIPT = `
 (function () {
-  var answer = DATA.answer, labels = DATA.labels, english = DATA.english, rows = DATA.rows, len = DATA.len;
-  var guesses = [], current = [], done = false;
+  var answer = DATA.answer, labels = DATA.labels, english = DATA.english, hints = DATA.hints;
+  var rows = DATA.rows, len = DATA.len, display = DATA.display, showTooltips = DATA.showTooltips;
+  var guesses = [], current = [], done = false, solvedRow = -1;
   var boardEl = document.getElementById('board');
   var msgEl = document.getElementById('message');
   var kbEl = document.getElementById('keyboard');
@@ -62,6 +70,19 @@ const GAME_SCRIPT = `
     return states;
   }
 
+  function fill(el, id) {
+    var glyph = document.createElement('span');
+    glyph.className = 'glyph';
+    glyph.textContent = id;
+    el.appendChild(glyph);
+    var rev = document.createElement('span');
+    rev.className = 'reveal';
+    rev.textContent = english[id] || labels[id] || id;
+    el.appendChild(rev);
+    if (display === 'english') el.className += ' english';
+    if (showTooltips && hints[id]) el.title = hints[id];
+  }
+
   function render() {
     boardEl.innerHTML = '';
     for (var r = 0; r < rows; r++) {
@@ -73,17 +94,9 @@ const GAME_SCRIPT = `
         var tile = document.createElement('div');
         tile.className = 'tile';
         var id = guess ? guess[c] : (r === guesses.length ? current[c] : undefined);
-        if (id) {
-          var glyph = document.createElement('span');
-          glyph.className = 'glyph';
-          glyph.textContent = id;
-          tile.appendChild(glyph);
-          var rev = document.createElement('span');
-          rev.className = 'reveal';
-          rev.textContent = english[id] || labels[id] || id;
-          tile.appendChild(rev);
-        }
+        if (id) fill(tile, id);
         if (states) tile.className += ' ' + states[c];
+        if (r === solvedRow) tile.className += ' revealed';
         rowEl.appendChild(tile);
       }
       boardEl.appendChild(rowEl);
@@ -96,12 +109,12 @@ const GAME_SCRIPT = `
     guesses.push(current.slice());
     var states = evaluate(current, answer);
     current = [];
-    render();
-    if (states.every(function (s) { return s === 'correct'; })) { done = true; msgEl.textContent = 'Solved!'; }
+    if (states.every(function (s) { return s === 'correct'; })) { done = true; solvedRow = guesses.length - 1; msgEl.textContent = 'Solved!'; }
     else if (guesses.length >= rows) {
       done = true;
       msgEl.textContent = 'Answer: ' + answer.map(function (id) { return labels[id] || id; }).join(' ');
     } else { msgEl.textContent = ''; }
+    render();
   }
 
   function press(id) { if (done) return; if (current.length < len) { current.push(id); msgEl.textContent = ''; render(); } }
@@ -116,8 +129,8 @@ const GAME_SCRIPT = `
     rowEl.className = 'keyrow';
     kb.slice(range[0], range[1]).forEach(function (k) {
       var b = document.createElement('button');
-      b.className = 'key'; b.type = 'button';
-      b.title = k.label + ' (' + k.example + ')';
+      b.className = 'key' + (display === 'english' ? ' english' : ''); b.type = 'button';
+      if (showTooltips) b.title = k.hint;
       var glyph = document.createElement('span');
       glyph.className = 'glyph'; glyph.textContent = k.ipa;
       b.appendChild(glyph);
@@ -155,26 +168,31 @@ const GAME_SCRIPT = `
 export function buildWordleHtml(
   config: WordleConfig,
   keyboard: readonly Phoneme[],
+  settings: ActivitySettings,
 ): string {
   const labels: Record<string, string> = {};
   const english: Record<string, string> = {};
+  const hints: Record<string, string> = {};
   for (const phoneme of [...config.word, ...keyboard]) {
     labels[phoneme.ipa] = phoneme.label;
     english[phoneme.ipa] = phoneme.english;
+    hints[phoneme.ipa] = phonemeHint(phoneme);
   }
 
   const data = {
     answer: config.word.map((phoneme) => phoneme.ipa),
     labels,
     english,
+    hints,
     keyboard: keyboard.map((phoneme) => ({
       ipa: phoneme.ipa,
       english: phoneme.english,
-      label: phoneme.label,
-      example: phoneme.example,
+      hint: phonemeHint(phoneme),
     })),
     rows: config.maxGuesses,
     len: config.word.length,
+    display: settings.symbolDisplay,
+    showTooltips: settings.showTooltips,
   };
 
   const bodyHtml = `
@@ -191,5 +209,6 @@ export function buildWordleHtml(
     styles: GAME_STYLES,
     bodyHtml,
     script,
+    theme: settings.theme,
   });
 }

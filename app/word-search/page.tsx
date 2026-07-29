@@ -1,26 +1,20 @@
-import { PagePlaceholder } from "@/components/ui/PagePlaceholder";
+import { PageShell } from "@/components/ui/PageShell";
 import { PhonemeTile } from "@/components/phoneme/PhonemeTile";
-import { WordSearchGame } from "@/components/wordsearch/WordSearchGame";
-import { ExportButton } from "@/components/wordsearch/ExportButton";
+import { WordSearchActivity } from "@/components/wordsearch/WordSearchActivity";
 import {
   getFixedWordSearchConfig,
   getFixedWordSearchWords,
   getPhonemeInventory,
 } from "@/lib/data";
-import { generateWordSearch } from "@/lib/wordsearch";
+import { getActivitySettings } from "@/lib/settings-cookie";
 
-export default function WordSearchPage() {
+export default async function WordSearchPage() {
   const config = getFixedWordSearchConfig();
   const words = getFixedWordSearchWords(5);
-  const puzzle = generateWordSearch(
-    words,
-    config.size,
-    getPhonemeInventory(),
-    42,
-  );
+  const settings = await getActivitySettings();
 
   return (
-    <PagePlaceholder
+    <PageShell
       title="Phoneme Word Search"
       intro="Find every word that features the target sound by dragging across the grid, then export a self-contained copy that plays offline."
     >
@@ -38,26 +32,15 @@ export default function WordSearchPage() {
           <span className="text-sm text-muted">{config.phoneme.example}</span>
         </section>
 
-        <div className="flex flex-col gap-8 lg:flex-row lg:items-start lg:gap-10">
-          <WordSearchGame puzzle={puzzle} words={words} />
-
-          <section className="flex flex-col gap-3 rounded-xl border border-border bg-surface p-4 lg:w-72">
-            <div className="flex flex-col gap-0.5">
-              <h2 className="text-sm font-semibold text-foreground">
-                Take-home copy
-              </h2>
-              <p className="text-xs text-muted">
-                Download a self-contained HTML word search that plays offline.
-              </p>
-            </div>
-            <ExportButton
-              phoneme={config.phoneme}
-              words={words}
-              puzzle={puzzle}
-            />
-          </section>
-        </div>
+        <WordSearchActivity
+          phoneme={config.phoneme}
+          words={words}
+          fillers={getPhonemeInventory()}
+          size={config.size}
+          initialSeed={42}
+          settings={settings}
+        />
       </div>
-    </PagePlaceholder>
+    </PageShell>
   );
 }

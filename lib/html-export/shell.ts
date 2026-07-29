@@ -1,12 +1,16 @@
+import type { Theme } from "@/lib/types";
+
 type RenderDocumentInput = {
   title: string;
   styles: string;
   bodyHtml: string;
   script: string;
+  theme: Theme;
 };
 
 const BASE_STYLES = `
-:root {
+:root,
+:root[data-theme="light"] {
   --background: #eef6ec;
   --surface: #ffffff;
   --surface-muted: #e2f0dd;
@@ -22,6 +26,23 @@ const BASE_STYLES = `
   --absent: #6b7d72;
   --absent-foreground: #ffffff;
   color-scheme: light;
+}
+:root[data-theme="dark"] {
+  --background: #060a06;
+  --surface: #0f1a11;
+  --surface-muted: #162418;
+  --foreground: #e4f3e5;
+  --muted: #8fab94;
+  --primary: #48bb78;
+  --on-primary: #04120a;
+  --border: #1e3320;
+  --correct: #48bb78;
+  --correct-foreground: #04120a;
+  --present: #d69e2e;
+  --present-foreground: #1a1200;
+  --absent: #3a4a40;
+  --absent-foreground: #cfe0d4;
+  color-scheme: dark;
 }
 * { box-sizing: border-box; margin: 0; padding: 0; }
 body {
@@ -56,9 +77,10 @@ export function renderDocument({
   styles,
   bodyHtml,
   script,
+  theme,
 }: RenderDocumentInput): string {
   return `<!doctype html>
-<html lang="en">
+<html lang="en" data-theme="${theme}">
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />

@@ -1,5 +1,6 @@
-import type { Phoneme, PhonemeWord } from "@/lib/types";
+import type { ActivitySettings, Phoneme, PhonemeWord } from "@/lib/types";
 import type { GeneratedWordSearch } from "@/lib/wordsearch";
+import { phonemeHint } from "@/lib/phoneme";
 import { escapeHtml, renderDocument, serializeData } from "./shell";
 
 const GAME_STYLES = `
@@ -23,6 +24,14 @@ const GAME_STYLES = `
 }
 .cell:hover .glyph, .chip:hover .glyph { opacity: 0; }
 .cell:hover .reveal, .chip:hover .reveal { opacity: 1; }
+.english .glyph { opacity: 0; }
+.english .reveal { opacity: 1; }
+.english:hover .glyph { opacity: 1; }
+.english:hover .reveal { opacity: 0; }
+.revealed .glyph { opacity: 0 !important; }
+.revealed .reveal { opacity: 1 !important; }
+.clue.done .glyph { opacity: 0 !important; }
+.clue.done .reveal { opacity: 1 !important; }
 .clues { list-style: none; display: flex; flex-direction: column; gap: 8px; width: 100%; max-width: 360px; }
 .clue { display: flex; align-items: center; gap: 12px; border: 1px solid var(--border); border-radius: 10px; background: var(--surface); padding: 8px 12px; }
 .clue.done { opacity: 0.6; }
@@ -42,6 +51,8 @@ const GAME_STYLES = `
 const GAME_SCRIPT = `
 (function () {
   var size = DATA.size, grid = DATA.grid, placements = DATA.placements, words = DATA.words;
+  var display = DATA.display, showTooltips = DATA.showTooltips;
+  var englishClass = display === 'english' ? ' english' : '';
   var found = [], start = null, selection = [];
   var gridEl = document.getElementById('grid');
   var statusEl = document.getElementById('status');
@@ -80,7 +91,7 @@ const GAME_SCRIPT = `
     var sel = {};
     selection.forEach(function (c) { sel[key(c)] = true; });
     Object.keys(cellEls).forEach(function (k) {
-      cellEls[k].className = 'cell' + (fk[k] ? ' correct' : (sel[k] ? ' present' : ''));
+      cellEls[k].className = 'cell' + englishClass + (fk[k] ? ' correct revealed' : (sel[k] ? ' present' : ''));
     });
     statusEl.textContent = found.length === words.length ? 'All words found!' : (found.length + ' of ' + words.length + ' found');
     Array.prototype.forEach.call(cluesEl.children, function (li) {
@@ -95,20 +106,25 @@ const GAME_SCRIPT = `
     return { row: Number(t.getAttribute('data-row')), col: Number(t.getAttribute('data-col')) };
   }
 
+  function makeSymbol(container, ipa, english) {
+    var glyph = document.createElement('span');
+    glyph.className = 'glyph'; glyph.textContent = ipa;
+    container.appendChild(glyph);
+    var rev = document.createElement('span');
+    rev.className = 'reveal'; rev.textContent = english;
+    container.appendChild(rev);
+  }
+
   gridEl.style.gridTemplateColumns = 'repeat(' + size + ', minmax(0, 1fr))';
   for (var r = 0; r < size; r++) {
     for (var c = 0; c < size; c++) {
       var cellEl = document.createElement('div');
-      cellEl.className = 'cell';
+      cellEl.className = 'cell' + englishClass;
       cellEl.setAttribute('data-cell', '');
       cellEl.setAttribute('data-row', r);
       cellEl.setAttribute('data-col', c);
-      var cellGlyph = document.createElement('span');
-      cellGlyph.className = 'glyph'; cellGlyph.textContent = grid[r][c].ipa;
-      cellEl.appendChild(cellGlyph);
-      var cellRev = document.createElement('span');
-      cellRev.className = 'reveal'; cellRev.textContent = grid[r][c].english;
-      cellEl.appendChild(cellRev);
+      if (showTooltips && grid[r][c].hint) cellEl.title = grid[r][c].hint;
+      makeSymbol(cellEl, grid[r][c].ipa, grid[r][c].english);
       gridEl.appendChild(cellEl);
       cellEls[r + ',' + c] = cellEl;
     }
@@ -125,13 +141,9 @@ const GAME_SCRIPT = `
     strip.className = 'strip';
     w.phonemes.forEach(function (ph) {
       var chip = document.createElement('span');
-      chip.className = 'chip';
-      var chipGlyph = document.createElement('span');
-      chipGlyph.className = 'glyph'; chipGlyph.textContent = ph.ipa;
-      chip.appendChild(chipGlyph);
-      var chipRev = document.createElement('span');
-      chipRev.className = 'reveal'; chipRev.textContent = ph.english;
-      chip.appendChild(chipRev);
+      chip.className = 'chip' + englishClass;
+      if (showTooltips && ph.hint) chip.title = ph.hint;
+      makeSymbol(chip, ph.ipa, ph.english);
       strip.appendChild(chip);
     });
     li.appendChild(strip);
@@ -173,11 +185,16 @@ export function buildWordSearchHtml(
   phoneme: Phoneme,
   words: readonly PhonemeWord[],
   puzzle: GeneratedWordSearch,
+  settings: ActivitySettings,
 ): string {
   const data = {
     size: puzzle.size,
     grid: puzzle.grid.map((row) =>
-      row.map((cell) => ({ ipa: cell.ipa, english: cell.english })),
+      row.map((cell) => ({
+        ipa: cell.ipa,
+        english: cell.english,
+        hint: phonemeHint(cell),
+      })),
     ),
     placements: puzzle.words.map((placement) => ({
       english: placement.english,
@@ -185,8 +202,14 @@ export function buildWordSearchHtml(
     })),
     words: words.map((word) => ({
       english: word.english,
-      phonemes: word.phonemes.map((p) => ({ ipa: p.ipa, english: p.english })),
+      phonemes: word.phonemes.map((p) => ({
+        ipa: p.ipa,
+        english: p.english,
+        hint: phonemeHint(p),
+      })),
     })),
+    display: settings.symbolDisplay,
+    showTooltips: settings.showTooltips,
   };
 
   const bodyHtml = `
@@ -203,5 +226,6 @@ export function buildWordSearchHtml(
     styles: GAME_STYLES,
     bodyHtml,
     script,
+    theme: settings.theme,
   });
 }

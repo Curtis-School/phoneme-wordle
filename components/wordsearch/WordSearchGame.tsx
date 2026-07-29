@@ -2,20 +2,26 @@
 
 import { useMemo, useRef, useState } from "react";
 import type { PointerEvent as ReactPointerEvent } from "react";
-import type { PhonemeWord } from "@/lib/types";
+import type { ActivitySettings, PhonemeWord } from "@/lib/types";
 import {
   lineBetween,
   matchesPlacement,
   type Cell,
   type GeneratedWordSearch,
 } from "@/lib/wordsearch";
+import { phonemeHint } from "@/lib/phoneme";
 import { PhonemeTile } from "@/components/phoneme/PhonemeTile";
 import { WordSearchClues } from "./WordSearchClues";
 
 type WordSearchGameProps = {
   puzzle: GeneratedWordSearch;
   words: readonly PhonemeWord[];
+  settings: ActivitySettings;
+  onCycle?: () => void;
 };
+
+const ACTION_BUTTON =
+  "whitespace-nowrap rounded-lg border border-border px-3 py-1.5 text-center text-xs font-medium text-foreground transition-colors hover:bg-surface-muted";
 
 const key = (cell: Cell) => `${cell.row},${cell.col}`;
 
@@ -28,7 +34,12 @@ function cellFromNode(node: Element | null): Cell | null {
   };
 }
 
-export function WordSearchGame({ puzzle, words }: WordSearchGameProps) {
+export function WordSearchGame({
+  puzzle,
+  words,
+  settings,
+  onCycle,
+}: WordSearchGameProps) {
   const gridRef = useRef<HTMLDivElement>(null);
   const startRef = useRef<Cell | null>(null);
   const selectionRef = useRef<Cell[]>([]);
@@ -94,21 +105,32 @@ export function WordSearchGame({ puzzle, words }: WordSearchGameProps) {
   return (
     <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:gap-10">
       <div className="flex flex-col gap-3">
-        <div className="flex items-center justify-between gap-4">
+        <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
           <div
             role="status"
             aria-live="polite"
-            className="text-sm font-semibold text-foreground"
+            className="whitespace-nowrap text-sm font-semibold text-foreground"
           >
             {status}
           </div>
-          <button
-            type="button"
-            onClick={() => setRevealed((value) => !value)}
-            className="rounded-lg border border-border px-3 py-1.5 text-xs font-medium text-foreground transition-colors hover:bg-surface-muted"
-          >
-            {revealed ? "Hide answers" : "Reveal answers"}
-          </button>
+          <div className="flex items-center gap-2">
+            {onCycle && (
+              <button
+                type="button"
+                onClick={onCycle}
+                className={ACTION_BUTTON}
+              >
+                Cycle layout
+              </button>
+            )}
+            <button
+              type="button"
+              onClick={() => setRevealed((value) => !value)}
+              className={`${ACTION_BUTTON} min-w-32`}
+            >
+              {revealed ? "Hide answers" : "Reveal answers"}
+            </button>
+          </div>
         </div>
 
         <div className="overflow-x-auto">
@@ -128,7 +150,8 @@ export function WordSearchGame({ puzzle, words }: WordSearchGameProps) {
             {puzzle.grid.map((row, rowIndex) =>
               row.map((cell, colIndex) => {
                 const cellKey = `${rowIndex},${colIndex}`;
-                const tone = foundKeys.has(cellKey)
+                const isFound = foundKeys.has(cellKey);
+                const tone = isFound
                   ? "correct"
                   : selectedKeys.has(cellKey)
                     ? "present"
@@ -143,6 +166,10 @@ export function WordSearchGame({ puzzle, words }: WordSearchGameProps) {
                     <PhonemeTile
                       label={cell.ipa}
                       reveal={cell.english}
+                      hint={phonemeHint(cell)}
+                      display={settings.symbolDisplay}
+                      showTooltip={settings.showTooltips}
+                      revealed={isFound}
                       size="sm"
                       tone={tone}
                     />
@@ -156,7 +183,12 @@ export function WordSearchGame({ puzzle, words }: WordSearchGameProps) {
 
       <div className="flex flex-col gap-3 lg:min-w-72">
         <h2 className="text-sm font-semibold text-foreground">Words to find</h2>
-        <WordSearchClues words={words} found={shownFound} />
+        <WordSearchClues
+          words={words}
+          found={shownFound}
+          display={settings.symbolDisplay}
+          showTooltip={settings.showTooltips}
+        />
       </div>
     </div>
   );

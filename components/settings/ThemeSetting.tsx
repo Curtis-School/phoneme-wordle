@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useTransition } from "react";
 import type { Theme } from "@/lib/types";
-import { persistTheme } from "@/lib/theme-actions";
+import { persistTheme } from "@/lib/settings-actions";
 
 type ThemeSettingProps = {
   initialTheme: Theme;

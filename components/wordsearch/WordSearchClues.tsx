@@ -2,14 +2,22 @@ import {
   PhonemeStrip,
   PhonemeTile,
 } from "@/components/phoneme/PhonemeTile";
-import type { PhonemeWord } from "@/lib/types";
+import { phonemeHint } from "@/lib/phoneme";
+import type { PhonemeWord, SymbolDisplay } from "@/lib/types";
 
 type WordSearchCluesProps = {
   words: readonly PhonemeWord[];
   found?: readonly string[];
+  display?: SymbolDisplay;
+  showTooltip?: boolean;
 };
 
-export function WordSearchClues({ words, found = [] }: WordSearchCluesProps) {
+export function WordSearchClues({
+  words,
+  found = [],
+  display = "ipa",
+  showTooltip = true,
+}: WordSearchCluesProps) {
   return (
     <ul className="flex flex-col gap-3">
       {words.map((word) => {
@@ -34,6 +42,10 @@ export function WordSearchClues({ words, found = [] }: WordSearchCluesProps) {
                   key={`${word.english}-${index}`}
                   label={phoneme.ipa}
                   reveal={phoneme.english}
+                  hint={phonemeHint(phoneme)}
+                  display={display}
+                  showTooltip={showTooltip}
+                  revealed={isFound}
                   size="sm"
                   tone={isFound ? "correct" : "default"}
                 />

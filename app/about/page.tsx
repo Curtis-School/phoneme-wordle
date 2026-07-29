@@ -1,9 +1,9 @@
 import { SITE } from "@/lib/site";
-import { PagePlaceholder } from "@/components/ui/PagePlaceholder";
+import { PageShell } from "@/components/ui/PageShell";
 
 export default function AboutPage() {
   return (
-    <PagePlaceholder
+    <PageShell
       title="About"
       intro="Phoneme Wordle is a frontend builder that lets Speech Pathology teachers create and preview phoneme-based Wordle and Word Search activities, then export each as a single playable HTML file. Dynamic word lists are coming soon! Assessment 1 is frontend only."
     >
@@ -18,6 +18,6 @@ export default function AboutPage() {
       <p className="text-sm text-muted">
         A short how-to video will be embedded here.
       </p>
-    </PagePlaceholder>
+    </PageShell>
   );
 }

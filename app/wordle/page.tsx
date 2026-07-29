@@ -1,4 +1,4 @@
-import { PagePlaceholder } from "@/components/ui/PagePlaceholder";
+import { PageShell } from "@/components/ui/PageShell";
 import {
   PhonemeStrip,
   PhonemeTile,
@@ -7,6 +7,7 @@ import { WordleGame } from "@/components/wordle/WordleGame";
 import { ExportButton } from "@/components/wordle/ExportButton";
 import { getFixedWordleConfig, getPhonemeInventory } from "@/lib/data";
 import { buildKeyboard } from "@/lib/wordle";
+import { getActivitySettings } from "@/lib/settings-cookie";
 
 const LEGEND: { tone: "correct" | "present" | "absent"; text: string }[] = [
   { tone: "correct", text: "Right sound, right spot" },
@@ -14,17 +15,18 @@ const LEGEND: { tone: "correct" | "present" | "absent"; text: string }[] = [
   { tone: "absent", text: "Sound not in the word" },
 ];
 
-export default function WordlePage() {
+export default async function WordlePage() {
   const config = getFixedWordleConfig();
   const keys = buildKeyboard(config.word, getPhonemeInventory());
+  const settings = await getActivitySettings();
 
   return (
-    <PagePlaceholder
+    <PageShell
       title="Phoneme Wordle"
       intro="Guess the hidden phoneme word using sound tiles, then export the activity as a self-contained HTML file that plays offline."
     >
       <div className="flex flex-col gap-8 sm:flex-row sm:items-start sm:gap-12">
-        <WordleGame config={config} keys={keys} />
+        <WordleGame config={config} keys={keys} settings={settings} />
 
         <div className="flex flex-col gap-6 sm:w-64">
           <section className="flex flex-col gap-3">
@@ -63,10 +65,10 @@ export default function WordlePage() {
                 ))}
               </PhonemeStrip>
             </div>
-            <ExportButton config={config} keys={keys} />
+            <ExportButton config={config} keys={keys} settings={settings} />
           </section>
         </div>
       </div>
-    </PagePlaceholder>
+    </PageShell>
   );
 }

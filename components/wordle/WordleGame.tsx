@@ -31,7 +31,6 @@ export function WordleGame({ config, keys, settings }: WordleGameProps) {
 
   const [guesses, setGuesses] = useState<string[][]>([]);
   const [current, setCurrent] = useState<string[]>([]);
-  const [message, setMessage] = useState("");
 
   const solved =
     guesses.length > 0 &&
@@ -55,7 +54,6 @@ export function WordleGame({ config, keys, settings }: WordleGameProps) {
   function press(ipa: string) {
     if (done || current.length >= len) return;
     setCurrent((value) => [...value, ipa]);
-    setMessage("");
   }
 
   function backspace() {
@@ -64,22 +62,14 @@ export function WordleGame({ config, keys, settings }: WordleGameProps) {
   }
 
   function submit() {
-    if (done) return;
-    if (current.length !== len) {
-      setMessage("Fill all the sounds first.");
-      return;
-    }
-    const next = [...guesses, current];
-    setGuesses(next);
+    if (done || current.length !== len) return;
+    setGuesses((value) => [...value, current]);
     setCurrent([]);
-    if (isSolved(evaluateGuess(current, answer))) {
-      setMessage("Solved!");
-    } else if (next.length >= rows) {
-      const revealed = answer.map((id) => byIpa[id]?.label ?? id).join(" ");
-      setMessage(`Out of guesses — answer was ${revealed}.`);
-    } else {
-      setMessage("");
-    }
+  }
+
+  function reset() {
+    setGuesses([]);
+    setCurrent([]);
   }
 
   useEffect(() => {
@@ -99,33 +89,72 @@ export function WordleGame({ config, keys, settings }: WordleGameProps) {
 
   const solvedRow = solved ? guesses.length - 1 : null;
 
+  const tryLabel = done
+    ? solved
+      ? "Solved"
+      : "Out of tries"
+    : `Try ${guesses.length + 1} of ${rows}`;
+  const unit = settings.symbolDisplay === "english" ? "letters" : "sounds";
+  const statusText = solved
+    ? `Nice — ${config.englishWord}`
+    : done
+      ? `The word was ${config.englishWord}`
+      : current.length === len
+        ? "Ready to submit"
+        : `Tap ${unit} to fill the row`;
+  const statusToneClass = solved
+    ? "bg-correct/10 text-correct"
+    : done
+      ? "bg-present/10 text-present"
+      : "bg-surface-muted text-muted";
+
   return (
-    <div className="flex flex-col items-start gap-5">
-      <div
-        role="status"
-        aria-live="polite"
-        className="min-h-6 text-sm font-semibold text-foreground"
-      >
-        {message}
+    <section className="flex flex-col rounded-2xl border border-border bg-surface p-5">
+      <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-3 border-b border-border pb-4">
+        <div className="flex items-center gap-3">
+          <span className="text-sm font-semibold text-foreground">
+            {tryLabel}
+          </span>
+          <span
+            role="status"
+            aria-live="polite"
+            className={`rounded-full px-2.5 py-1 text-xs font-semibold ${statusToneClass}`}
+          >
+            {statusText}
+          </span>
+        </div>
+        <button
+          type="button"
+          onClick={reset}
+          className="inline-flex h-9 items-center gap-2 whitespace-nowrap rounded-lg border border-border bg-surface px-3.5 text-sm font-semibold text-foreground transition-colors hover:bg-surface-muted"
+        >
+          <span aria-hidden="true">↺</span>New round
+        </button>
       </div>
-      <WordleBoard
-        length={len}
-        rows={rows}
-        guesses={evaluated}
-        current={currentTiles}
-        display={settings.symbolDisplay}
-        showTooltip={settings.showTooltips}
-        solvedRow={solvedRow}
-      />
-      <PhonemeKeyboard
-        keys={keys}
-        onPress={press}
-        onEnter={submit}
-        onBackspace={backspace}
-        disabled={done}
-        display={settings.symbolDisplay}
-        showTooltip={settings.showTooltips}
-      />
-    </div>
+
+      <div className="flex justify-center py-7">
+        <WordleBoard
+          length={len}
+          rows={rows}
+          guesses={evaluated}
+          current={currentTiles}
+          display={settings.symbolDisplay}
+          showTooltip={settings.showTooltips}
+          solvedRow={solvedRow}
+        />
+      </div>
+
+      <div className="flex justify-center border-t border-border pt-5">
+        <PhonemeKeyboard
+          keys={keys}
+          onPress={press}
+          onEnter={submit}
+          onBackspace={backspace}
+          disabled={done}
+          display={settings.symbolDisplay}
+          showTooltip={settings.showTooltips}
+        />
+      </div>
+    </section>
   );
 }

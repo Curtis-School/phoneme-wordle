@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useRef, useState } from "react";
-import type { PointerEvent as ReactPointerEvent } from "react";
+import type { PointerEvent as ReactPointerEvent, ReactNode } from "react";
 import type { ActivitySettings, PhonemeWord } from "@/lib/types";
 import {
   lineBetween,
@@ -18,10 +18,11 @@ type WordSearchGameProps = {
   words: readonly PhonemeWord[];
   settings: ActivitySettings;
   onCycle?: () => void;
+  takeHome?: ReactNode;
 };
 
 const ACTION_BUTTON =
-  "whitespace-nowrap rounded-lg border border-border px-3 py-1.5 text-center text-xs font-medium text-foreground transition-colors hover:bg-surface-muted";
+  "inline-flex h-9 items-center gap-2 whitespace-nowrap rounded-lg border border-border bg-surface px-3.5 text-sm font-semibold text-foreground transition-colors hover:bg-surface-muted";
 
 const key = (cell: Cell) => `${cell.row},${cell.col}`;
 
@@ -39,6 +40,7 @@ export function WordSearchGame({
   words,
   settings,
   onCycle,
+  takeHome,
 }: WordSearchGameProps) {
   const gridRef = useRef<HTMLDivElement>(null);
   const startRef = useRef<Cell | null>(null);
@@ -101,44 +103,53 @@ export function WordSearchGame({
     : solved
       ? "All words found!"
       : `${found.length} of ${puzzle.words.length} found`;
+  const progress = Math.round((found.length / puzzle.words.length) * 100);
 
   return (
-    <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:gap-10">
-      <div className="flex flex-col gap-3">
-        <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
-          <div
-            role="status"
-            aria-live="polite"
-            className="whitespace-nowrap text-sm font-semibold text-foreground"
-          >
-            {status}
+    <div className="grid gap-5 lg:grid-cols-[minmax(0,1.5fr)_minmax(300px,0.85fr)]">
+      <section className="flex flex-col rounded-2xl border border-border bg-surface p-5">
+        <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-3 border-b border-border pb-4">
+          <div className="flex items-center gap-3">
+            <div
+              role="status"
+              aria-live="polite"
+              className="whitespace-nowrap text-sm font-semibold text-foreground"
+            >
+              {status}
+            </div>
+            <div className="h-1.5 w-24 overflow-hidden rounded-full bg-surface-muted">
+              <div
+                className="h-full rounded-full bg-primary transition-[width] duration-200"
+                style={{ width: `${progress}%` }}
+              />
+            </div>
           </div>
           <div className="flex items-center gap-2">
             {onCycle && (
-              <button
-                type="button"
-                onClick={onCycle}
-                className={ACTION_BUTTON}
-              >
-                Cycle layout
+              <button type="button" onClick={onCycle} className={ACTION_BUTTON}>
+                <span aria-hidden="true">⤨</span>Shuffle grid
               </button>
             )}
             <button
               type="button"
               onClick={() => setRevealed((value) => !value)}
-              className={`${ACTION_BUTTON} min-w-32`}
+              className={
+                revealed
+                  ? "inline-flex h-9 items-center whitespace-nowrap rounded-lg border border-present bg-present/10 px-3.5 text-sm font-semibold text-present transition-colors"
+                  : ACTION_BUTTON
+              }
             >
               {revealed ? "Hide answers" : "Reveal answers"}
             </button>
           </div>
         </div>
 
-        <div className="overflow-x-auto">
+        <div className="flex flex-1 items-center justify-center overflow-x-auto pt-4">
           <div
             ref={gridRef}
             role="grid"
             aria-label="Phoneme word search grid"
-            className="grid w-fit touch-none select-none gap-1"
+            className="grid w-fit touch-none select-none gap-1.5"
             style={{
               gridTemplateColumns: `repeat(${puzzle.size}, minmax(0, 1fr))`,
             }}
@@ -170,7 +181,7 @@ export function WordSearchGame({
                       display={settings.symbolDisplay}
                       showTooltip={settings.showTooltips}
                       revealed={isFound}
-                      size="sm"
+                      size="board"
                       tone={tone}
                     />
                   </div>
@@ -179,16 +190,16 @@ export function WordSearchGame({
             )}
           </div>
         </div>
-      </div>
+      </section>
 
-      <div className="flex flex-col gap-3 lg:min-w-72">
-        <h2 className="text-sm font-semibold text-foreground">Words to find</h2>
+      <div className="flex flex-col gap-4">
         <WordSearchClues
           words={words}
           found={shownFound}
           display={settings.symbolDisplay}
           showTooltip={settings.showTooltips}
         />
+        {takeHome}
       </div>
     </div>
   );

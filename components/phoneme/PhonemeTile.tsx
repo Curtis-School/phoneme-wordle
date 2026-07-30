@@ -8,7 +8,7 @@ export type PhonemeTone =
   | "present"
   | "absent";
 
-export type PhonemeSize = "sm" | "md" | "lg";
+export type PhonemeSize = "sm" | "board" | "md" | "lg";
 
 type PhonemeTileProps = {
   label?: string;
@@ -33,6 +33,7 @@ const TONE_CLASSES: Record<PhonemeTone, string> = {
 
 const SIZE_CLASSES: Record<PhonemeSize, string> = {
   sm: "size-8 text-xs",
+  board: "size-11 text-sm",
   md: "size-12 text-base",
   lg: "size-14 text-lg",
 };

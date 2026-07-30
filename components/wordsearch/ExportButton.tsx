@@ -27,7 +27,7 @@ export function ExportButton({
     <button
       type="button"
       onClick={handleExport}
-      className="inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-on-primary transition-colors hover:bg-primary-hover"
+      className="mt-3.5 flex h-11 w-full items-center justify-center gap-2.5 rounded-xl bg-primary text-sm font-bold text-on-primary transition-colors hover:bg-primary-hover"
     >
       <DownloadIcon />
       Export playable .html

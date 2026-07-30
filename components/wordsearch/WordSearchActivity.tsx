@@ -31,32 +31,29 @@ export function WordSearchActivity({
   );
 
   return (
-    <div className="flex flex-col gap-8 lg:flex-row lg:items-start lg:gap-10">
-      <WordSearchGame
-        key={seed}
-        puzzle={puzzle}
-        words={words}
-        settings={settings}
-        onCycle={() => setSeed((value) => value + 1)}
-      />
-
-      <section className="flex flex-col gap-3 rounded-xl border border-border bg-surface p-4 lg:w-72">
-        <div className="flex flex-col gap-0.5">
+    <WordSearchGame
+      key={seed}
+      puzzle={puzzle}
+      words={words}
+      settings={settings}
+      onCycle={() => setSeed((value) => value + 1)}
+      takeHome={
+        <section className="rounded-2xl border border-border bg-surface p-5">
           <h2 className="text-sm font-semibold text-foreground">
             Take-home copy
           </h2>
-          <p className="text-xs text-muted">
-            Download a self-contained HTML word search that plays offline. It
-            matches the layout and settings shown here.
+          <p className="mt-1.5 text-xs leading-6 text-muted">
+            A self-contained HTML puzzle that plays offline, matching the layout
+            and settings shown here.
           </p>
-        </div>
-        <ExportButton
-          phoneme={phoneme}
-          words={words}
-          puzzle={puzzle}
-          settings={settings}
-        />
-      </section>
-    </div>
+          <ExportButton
+            phoneme={phoneme}
+            words={words}
+            puzzle={puzzle}
+            settings={settings}
+          />
+        </section>
+      }
+    />
   );
 }

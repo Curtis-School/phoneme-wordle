@@ -7,7 +7,6 @@ export type WordSearchCell = {
   ipa: string;
   english: string;
   example: string;
-  isSolution: boolean;
 };
 
 export type Cell = { row: number; col: number };
@@ -119,7 +118,6 @@ export function generateWordSearch(
         ipa: phoneme.ipa,
         english: phoneme.english,
         example: phoneme.example,
-        isSolution: cellPhoneme !== null,
       };
     }),
   );

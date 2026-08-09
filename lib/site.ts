@@ -4,6 +4,10 @@ export const SITE = {
   assessment: "CSE3CWA — Assessment 1",
   author: "Curtis Bowman",
   studentNumber: "20962451",
+  repoUrl: "https://github.com/Curtis-School/phoneme-wordle",
+  demoUrl:
+    "https://latrobe.zoom.us/rec/share/2l4gzKB4A9G88Aeli_aN6VdWdanGJvFJU0Kpjo_EXoMNQdmDrPC6ao6XhFWbegbY.3xcVJZcbhdCcOLI6?startTime=1786237421000",
+  demoPasscode: "3P2H2S2",
 } as const;
 
 export type NavLink = {

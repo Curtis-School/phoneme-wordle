@@ -16,7 +16,24 @@ export default function AboutPage() {
         <dd className="text-foreground">{SITE.assessment}</dd>
       </dl>
       <p className="text-sm text-muted">
-        How-to video placeholder.
+        How-to video:{" "}
+        <a
+          href={SITE.demoUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          title="Phoneme Wordle video recording (opens in a new tab)"
+          aria-label="Phoneme Wordle video recording (opens in a new tab)"
+          className="font-medium text-primary underline underline-offset-4 hover:text-primary-hover"
+        >
+          Watch the Zoom recording
+        </a>{" "}
+        <span className="whitespace-nowrap">
+          (passcode{" "}
+          <code className="rounded bg-surface px-1.5 py-0.5 font-mono text-xs text-foreground">
+            {SITE.demoPasscode}
+          </code>
+          )
+        </span>
       </p>
       <p className="text-sm text-muted">
         Source code:{" "}

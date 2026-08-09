@@ -16,7 +16,20 @@ export default function AboutPage() {
         <dd className="text-foreground">{SITE.assessment}</dd>
       </dl>
       <p className="text-sm text-muted">
-        A short how-to video will be embedded here.
+        How-to video placeholder.
+      </p>
+      <p className="text-sm text-muted">
+        Source code:{" "}
+        <a
+          href={SITE.repoUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          title="Phoneme Wordle source code on GitHub (opens in a new tab)"
+          aria-label="Phoneme Wordle source code on GitHub (opens in a new tab)"
+          className="font-medium text-primary underline underline-offset-4 hover:text-primary-hover"
+        >
+          github.com/Curtis-School/phoneme-wordle
+        </a>
       </p>
     </PageShell>
   );

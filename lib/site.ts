@@ -4,6 +4,7 @@ export const SITE = {
   assessment: "CSE3CWA — Assessment 1",
   author: "Curtis Bowman",
   studentNumber: "20962451",
+  repoUrl: "https://github.com/Curtis-School/phoneme-wordle",
 } as const;
 
 export type NavLink = {

@@ -9,7 +9,6 @@
   --muted: #4c6152;
   --primary: #2f855a;
   --primary-hover: #276749;
-  --accent: #6cba7f;
   --on-primary: #ffffff;
   --border: #cfe6ca;
   --correct: #2f855a;
@@ -24,12 +23,11 @@
 :root[data-theme="dark"] {
   --background: #060a06;
   --surface: #0f1a11;
-  --surface-muted: #16241800;
+  --surface-muted: #162418;
   --foreground: #e4f3e5;
   --muted: #8fab94;
   --primary: #48bb78;
   --primary-hover: #68d391;
-  --accent: #2f6f47;
   --on-primary: #04120a;
   --border: #1e3320;
   --correct: #48bb78;
@@ -49,7 +47,6 @@
   --color-muted: var(--muted);
   --color-primary: var(--primary);
   --color-primary-hover: var(--primary-hover);
-  --color-accent: var(--accent);
   --color-on-primary: var(--on-primary);
   --color-border: var(--border);
   --color-correct: var(--correct);

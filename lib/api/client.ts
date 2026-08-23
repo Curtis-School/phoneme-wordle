@@ -1,6 +1,6 @@
 import "server-only";
 
-import type { Phoneme, PhonemeWord } from "@/lib/types";
+import type { Phoneme } from "@/lib/types";
 import type {
   ActivitySummary,
   ActivityType,
@@ -105,10 +105,6 @@ async function request<T>(path: string, options: RequestOptions = {}): Promise<T
 
 export function toPhoneme({ ipa, label, example, english }: ApiPhoneme): Phoneme {
   return { ipa, label, example, english };
-}
-
-export function toPhonemeWord(word: ApiWord): PhonemeWord {
-  return { english: word.english, phonemes: word.phonemes.map(toPhoneme) };
 }
 
 export async function getPhonemes(search?: string): Promise<Phoneme[]> {

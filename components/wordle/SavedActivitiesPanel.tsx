@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useRef, useState, useTransition } from "react";
-import { useRouter } from "next/navigation";
 import { PhonemeStrip, PhonemeTile } from "@/components/phoneme/PhonemeTile";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { buildWordleHtml } from "@/lib/html-export/wordle-template";
@@ -46,7 +45,6 @@ export function SavedActivitiesPanel({
 }
 
 function SaveButton({ summary, wordId, englishWord, settings }: SavedActivitiesPanelProps) {
-  const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [toast, setToast] = useState<{ tone: "success" | "error"; message: string }>();
 
@@ -71,7 +69,6 @@ function SaveButton({ summary, wordId, englishWord, settings }: SavedActivitiesP
 
       if (result.ok) {
         setToast({ tone: "success", message: `Saved “${englishWord}” to your activities.` });
-        router.refresh();
       } else {
         setToast({ tone: "error", message: result.message });
       }

@@ -3,10 +3,13 @@
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import { WordBuilder } from "./WordBuilder";
+import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
+import { deleteWordById } from "@/lib/word-actions";
 import type { Difficulty, Phoneme, SymbolDisplay } from "@/lib/types";
 
 type WordControlsProps = {
   englishWord: string;
+  wordId: number;
   difficulty: Difficulty;
   wordLength: number;
   wordListId: number;
@@ -17,6 +20,7 @@ type WordControlsProps = {
 
 export function WordControls({
   englishWord,
+  wordId,
   difficulty,
   wordLength,
   wordListId,
@@ -28,7 +32,9 @@ export function WordControls({
   const [editing, setEditing] = useState(Boolean(error));
   const [isPending, startTransition] = useTransition();
   const [dismissedError, setDismissedError] = useState<string>();
-  const visibleError = error === dismissedError ? undefined : error;
+  const [deleteError, setDeleteError] = useState<string>();
+  const [confirmingDelete, setConfirmingDelete] = useState(false);
+  const visibleError = deleteError ?? (error === dismissedError ? undefined : error);
 
   function show(word: string) {
     setEditing(false);
@@ -43,6 +49,21 @@ export function WordControls({
     startTransition(() => {
       router.replace(`/wordle?difficulty=${difficulty}`);
       router.refresh();
+    });
+  }
+
+  function remove() {
+    setConfirmingDelete(false);
+    setDeleteError(undefined);
+    startTransition(async () => {
+      const result = await deleteWordById(wordId);
+
+      if (result.ok) {
+        router.replace(`/wordle?difficulty=${difficulty}`);
+        router.refresh();
+      } else {
+        setDeleteError(result.message);
+      }
     });
   }
 
@@ -74,6 +95,16 @@ export function WordControls({
         >
           <PencilIcon />
         </button>
+        <button
+          type="button"
+          onClick={() => setConfirmingDelete(true)}
+          disabled={isPending}
+          aria-label="Delete this word"
+          title="Delete this word"
+          className="flex size-8 items-center justify-center rounded-lg border border-border text-muted transition-colors hover:border-present hover:text-present disabled:opacity-50"
+        >
+          <TrashIcon />
+        </button>
       </div>
 
       {editing ? (
@@ -95,6 +126,14 @@ export function WordControls({
           {visibleError} Try another word, or use the reload icon for a random one.
         </p>
       ) : null}
+
+      <ConfirmDialog
+        open={confirmingDelete}
+        title="Delete this word"
+        message={`Delete “${englishWord}” from the dictionary? This removes it from every word list.`}
+        onConfirm={remove}
+        onCancel={() => setConfirmingDelete(false)}
+      />
     </div>
   );
 }
@@ -113,6 +152,25 @@ function ReloadIcon() {
       aria-hidden="true"
     >
       <path d="M21 12a9 9 0 1 1-2.64-6.36M21 3v6h-6" />
+    </svg>
+  );
+}
+
+function TrashIcon() {
+  return (
+    <svg
+      width="15"
+      height="15"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2.2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      <path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2m3 0-1 14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2L4 6h16Z" />
+      <path d="M10 11v6M14 11v6" />
     </svg>
   );
 }

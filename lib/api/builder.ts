@@ -161,9 +161,9 @@ function pickTier(
   tiers: WordleActivity[],
   difficulty: Difficulty | undefined,
 ): WordleActivity | undefined {
-  if (!difficulty) return tiers[0];
+  const scoped = difficulty ? tiers.filter((tier) => tier.difficulty === difficulty) : tiers;
 
-  return tiers.find((tier) => tier.difficulty === difficulty);
+  return scoped.find((tier) => tier.word === null) ?? scoped[0];
 }
 
 function noTier(difficulty: Difficulty, tiers: WordleActivity[]): Loaded<never> {

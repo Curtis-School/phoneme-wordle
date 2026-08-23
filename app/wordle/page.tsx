@@ -7,6 +7,7 @@ import {
 import { WordleGame } from "@/components/wordle/WordleGame";
 import { ExportButton } from "@/components/wordle/ExportButton";
 import { AnswerKeyHeader } from "@/components/wordle/AnswerKeyHeader";
+import { SavedActivitiesPanel } from "@/components/wordle/SavedActivitiesPanel";
 import { WordControls } from "@/components/wordle/WordControls";
 import {
   loadWordle,
@@ -47,7 +48,7 @@ export default async function WordlePage({ searchParams }: PageProps<"/wordle">)
     );
   }
 
-  const { config, inventory, summary, tiers, wordError } = result.data;
+  const { config, inventory, summary, wordError, wordId } = result.data;
   const keys = buildKeyboard(config.word, inventory);
 
   return (
@@ -76,11 +77,18 @@ export default async function WordlePage({ searchParams }: PageProps<"/wordle">)
           </section>
 
           <section className="rounded-2xl border border-border bg-surface p-5">
-            <AnswerKeyHeader tiers={tiers} currentId={summary.id} />
+            <AnswerKeyHeader currentDifficulty={summary.difficulty} />
+            <SavedActivitiesPanel
+              summary={summary}
+              wordId={wordId}
+              englishWord={config.englishWord}
+              settings={settings}
+            />
             <div className="flex flex-col gap-2.5 rounded-xl border border-border bg-surface-muted px-3 py-2.5">
               <WordControls
                 key={summary.id}
                 englishWord={config.englishWord}
+                wordId={wordId}
                 difficulty={summary.difficulty}
                 wordLength={summary.wordLength}
                 wordListId={summary.wordList.id}

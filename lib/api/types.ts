@@ -2,6 +2,7 @@ import type {
   ActivitySettings,
   Difficulty,
   Phoneme,
+  PhonemeWord,
   WordleConfig,
   WordSearchConfig,
 } from "@/lib/types";
@@ -49,6 +50,8 @@ export type ActivitySummary =
       type: "wordle";
       maxGuesses: number;
       wordLength: number;
+      /** The pinned target word, if one has been saved for this activity. */
+      word: PhonemeWord | null;
     })
   | (ActivityBase & {
       type: "word_search";
@@ -57,6 +60,19 @@ export type ActivitySummary =
       seed: number | null;
       wordCount: number;
     });
+
+export type CreateWordleActivityInput = {
+  type: "wordle";
+  name: string;
+  difficulty: Difficulty;
+  wordListId: number;
+  maxGuesses: number;
+  wordLength: number;
+  wordId?: number;
+  symbolDisplay?: ActivitySettings["symbolDisplay"];
+  showTooltips?: boolean;
+  theme?: ActivitySettings["theme"];
+};
 
 export type GeneratedActivity = {
   id: number;

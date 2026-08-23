@@ -9,6 +9,7 @@ import type {
   ApiPhoneme,
   ApiWord,
   ApiWordListDetail,
+  CreateWordleActivityInput,
   GenerateResponse,
 } from "./types";
 
@@ -120,6 +121,18 @@ export async function getActivities(type?: ActivityType): Promise<ActivitySummar
   return request<ActivitySummary[]>("/api/activities", { query: { type } });
 }
 
+/** Saves a new Wordle configuration. Duplicate `name` is a 409 — it is unique per type. */
+export async function createActivity(
+  input: CreateWordleActivityInput,
+): Promise<ActivitySummary> {
+  return request<ActivitySummary>("/api/activities", { method: "POST", body: input });
+}
+
+/** Deletes a saved activity. The word list it points at is left untouched. */
+export async function deleteActivity(id: number): Promise<void> {
+  await request<void>(`/api/activities/${id}`, { method: "DELETE" });
+}
+
 export async function generateActivity(
   id: number,
   opts: { wordId?: number; seed?: number } = {},
@@ -141,6 +154,11 @@ export async function createWord(input: {
   phonemes: string[];
 }): Promise<ApiWord> {
   return request<ApiWord>("/api/words", { method: "POST", body: input });
+}
+
+/** Deletes a word outright — it cascades out of every word list that held it. */
+export async function deleteWord(id: number): Promise<void> {
+  await request<void>(`/api/words/${id}`, { method: "DELETE" });
 }
 
 export async function getWordList(id: number): Promise<ApiWordListDetail> {

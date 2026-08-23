@@ -150,7 +150,6 @@ export async function listWords(
 /** `phonemes` are IPA symbols, never ids. Duplicate `english` is a 409 — it is globally unique. */
 export async function createWord(input: {
   english: string;
-  hint?: string | null;
   phonemes: string[];
 }): Promise<ApiWord> {
   return request<ApiWord>("/api/words", { method: "POST", body: input });

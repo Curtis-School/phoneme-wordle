@@ -3,6 +3,7 @@
 import type { ActivitySettings, Phoneme, WordleConfig } from "@/lib/types";
 import { buildWordleHtml } from "@/lib/html-export/wordle-template";
 import { downloadHtml } from "@/lib/html-export/download";
+import { DownloadIcon } from "@/lib/icons";
 
 type ExportButtonProps = {
   config: WordleConfig;
@@ -25,23 +26,5 @@ export function ExportButton({ config, keys, settings }: ExportButtonProps) {
       <DownloadIcon />
       Export playable .html
     </button>
-  );
-}
-
-function DownloadIcon() {
-  return (
-    <svg
-      width="16"
-      height="16"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden="true"
-    >
-      <path d="M12 3v12M7 10l5 5 5-5M5 21h14" />
-    </svg>
   );
 }

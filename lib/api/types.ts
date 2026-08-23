@@ -18,7 +18,6 @@ export type ApiPhoneme = Phoneme & {
 export type ApiWord = {
   id: number;
   english: string;
-  hint: string | null;
   phonemes: ApiPhoneme[];
   createdAt: string;
   updatedAt: string;

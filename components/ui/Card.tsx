@@ -1,5 +1,6 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
+import { ArrowRightIcon } from "@/lib/icons";
 
 type CardProps = {
   title: string;
@@ -25,20 +26,7 @@ export function Card({ title, children, href, cta, badge }: CardProps) {
       <p className="mt-2 text-sm leading-6 text-muted">{children}</p>
       <span className="mt-5 inline-flex items-center gap-1.5 text-sm font-semibold text-primary">
         {cta}
-        <svg
-          width="16"
-          height="16"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2.2"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          aria-hidden="true"
-          className="transition-transform group-hover:translate-x-0.5"
-        >
-          <path d="M5 12h14M13 6l6 6-6 6" />
-        </svg>
+        <ArrowRightIcon className="transition-transform group-hover:translate-x-0.5" />
       </span>
     </Link>
   );

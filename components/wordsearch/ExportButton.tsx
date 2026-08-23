@@ -4,6 +4,7 @@ import type { ActivitySettings, Phoneme, PhonemeWord } from "@/lib/types";
 import type { GeneratedWordSearch } from "@/lib/wordsearch";
 import { buildWordSearchHtml } from "@/lib/html-export/word-search-template";
 import { downloadHtml } from "@/lib/html-export/download";
+import { DownloadIcon } from "@/lib/icons";
 
 type ExportButtonProps = {
   phoneme: Phoneme;
@@ -32,23 +33,5 @@ export function ExportButton({
       <DownloadIcon />
       Export playable .html
     </button>
-  );
-}
-
-function DownloadIcon() {
-  return (
-    <svg
-      width="16"
-      height="16"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden="true"
-    >
-      <path d="M12 3v12M7 10l5 5 5-5M5 21h14" />
-    </svg>
   );
 }

@@ -5,9 +5,11 @@ preview two phoneme-based classroom activities — a **Wordle** and a **Word
 Search** — and export each as a single, self-contained, playable `.html` file
 that runs offline with no dependencies.
 
-Built for La Trobe **CSE3CWA (Cloud Web Apps), Assessment 1**. This assessment is **frontend only** and each activity is currently locked to one puzzle drawn from a bundled dataset.
-Picking a difficulty tier or a target phoneme comes in Assessment 2, when the
-backend lands. The only persisted state is three preference cookies.
+Built for La Trobe **CSE3CWA (Cloud Web Apps)**. Assessment 1 delivered the
+builder against a bundled dataset; **Assessment 2** replaces that dataset with
+[`phoneme-api`](https://github.com/Curtis-School/phoneme-api), so every puzzle
+is now generated from the database on each request. Display preferences remain
+in three cookies.
 
 ## Features
 
@@ -43,12 +45,18 @@ No runtime dependencies beyond these.
 
 ## Getting started
 
+The activity API must be running first — the builder pages have no bundled
+content of their own. In `phoneme-api`, run `npm run dev` (or
+`docker compose up`); it listens on **3001**.
+
 ```bash
 npm install
+cp .env.example .env.local   # API_BASE_URL=http://localhost:3001
 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000).
+Open [http://localhost:3000](http://localhost:3000). If the API is down the
+builder pages say so and explain how to start it, rather than failing.
 
 Other scripts:
 
@@ -72,7 +80,7 @@ app/
 
 components/
   layout/               # Header, Footer, NavBar, HamburgerMenu
-  ui/                   # Card, PageShell
+  ui/                   # Card, PageShell, ApiErrorNotice
   phoneme/PhonemeTile   # the shared tile (IPA ⇄ English, tone, tooltip)
   wordle/               # WordleGame, WordleBoard, PhonemeKeyboard, ExportButton
   wordsearch/           # WordSearchActivity, WordSearchGame, WordSearchClues,
@@ -87,9 +95,10 @@ lib/
   settings.ts           # cookie names, defaults, validation/normalisation
   settings-cookie.ts    # server-side cookie reads
   settings-actions.ts   # Server Actions that write the cookies
-  data/
-    phoneme-word-list.json   # single source of truth
-    index.ts                 # typed accessors over the dataset
+  api/
+    types.ts                 # the shapes phoneme-api returns
+    client.ts                # server-only fetch wrapper + endpoint calls
+    builder.ts               # loads a builder page's data, or explains why it can't
   html-export/          # config → self-contained playable .html
     shell.ts                 # document skeleton, base styles, escaping
     wordle-template.ts       # Wordle markup + inlined vanilla-JS game
@@ -99,14 +108,32 @@ lib/
 
 ## Data
 
-`lib/data/phoneme-word-list.json` covers the 43-phoneme Australian English
-inventory, 90 pre-built Wordle words (30 per difficulty tier — easy is 3
-sounds, medium 4, hard 5), and one Word Search word pool per phoneme.
-Components read it only through the typed accessors in `lib/data/index.ts`.
+Every phoneme, word and activity comes from `phoneme-api`. The builder fetches
+on the server only, so `API_BASE_URL` never reaches the browser and there is no
+CORS to configure; `lib/api/client.ts` is marked `server-only` so an accidental
+client import is a build error rather than a leak.
 
-Assessment 1 uses a fixed slice of that dataset: the first easy Wordle word and
-the first Word Search config. The rest of the dataset is already in place for
-the Assessment 2 backend, which will drive the selection dynamically.
+| Call | Used for |
+| --- | --- |
+| `GET /api/activities?type=` | The saved configurations a builder page can render. |
+| `GET /api/activities/:id/generate` | A playable config — `WordleConfig` / `WordSearchConfig` verbatim. |
+| `GET /api/phonemes` | Keyboard keys and word-search filler sounds. |
+
+`generate` is drawn fresh on every request, so **reloading `/wordle` gives a
+different word** from the activity's word list — the fixed puzzle of Assessment
+1 is gone. A word search comes back with the `seed` the API used, and handing
+that to `generateWordSearch` reproduces both the word selection and the grid,
+because both sides run the same `mulberry32` PRNG.
+
+Add `?activity=<id>` to `/wordle` or `/word-search` to render a specific saved
+activity; without it the first one of that type is used. Every call sets
+`cache: "no-store"` — Next's default would otherwise fetch once during
+`next build` and serve that one puzzle forever.
+
+Activities also carry their own saved theme, tile display and tooltip settings.
+The **cookie preference wins** for the live page and its exports: it is the
+reader's own choice, and it is what the layout has already themed the page
+with. Per-activity settings belong to whoever edits the activity.
 
 ## Settings and persistence
 

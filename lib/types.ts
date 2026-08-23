@@ -34,9 +34,3 @@ export type WordSearchConfig = {
   words: PhonemeWord[];
   size: number;
 };
-
-export type PhonemeWordList = {
-  phonemeInventory: Phoneme[];
-  wordleConfigs: WordleConfig[];
-  wordSearchConfigs: WordSearchConfig[];
-};

@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import {
   ApiClientError,
   createWord,
+  deleteWord,
   getWordList,
   listWords,
   setWordListWords,
@@ -80,4 +81,21 @@ export async function saveWord(input: {
           : "The word was saved but could not be added to this difficulty.",
     };
   }
+}
+
+export type DeleteWordResult = { ok: true } | { ok: false; message: string };
+
+export async function deleteWordById(wordId: number): Promise<DeleteWordResult> {
+  try {
+    await deleteWord(wordId);
+  } catch (error) {
+    return {
+      ok: false,
+      message: error instanceof ApiClientError ? error.message : "Could not delete the word.",
+    };
+  }
+
+  revalidatePath("/wordle");
+
+  return { ok: true };
 }

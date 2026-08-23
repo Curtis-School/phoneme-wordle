@@ -12,7 +12,6 @@ import {
 import type {
   ActivitySummary,
   ActivityType,
-  GeneratedActivity,
   GenerateResponse,
   WordleGenerateResponse,
   WordSearchGenerateResponse,
@@ -63,7 +62,6 @@ function isWordleActivity(activity: ActivitySummary): activity is WordleActivity
 
 type LoadedBase = {
   activities: ActivitySummary[];
-  activity: GeneratedActivity;
   inventory: Phoneme[];
 };
 
@@ -161,9 +159,9 @@ function pickTier(
   tiers: WordleActivity[],
   difficulty: Difficulty | undefined,
 ): WordleActivity | undefined {
-  if (!difficulty) return tiers[0];
+  const scoped = difficulty ? tiers.filter((tier) => tier.difficulty === difficulty) : tiers;
 
-  return tiers.find((tier) => tier.difficulty === difficulty);
+  return scoped.find((tier) => tier.word === null) ?? scoped[0];
 }
 
 function noTier(difficulty: Difficulty, tiers: WordleActivity[]): Loaded<never> {
@@ -248,7 +246,6 @@ export async function loadWordle(params: WordleParams = {}): Promise<Loaded<Load
       ok: true,
       data: {
         activities,
-        activity,
         config: { ...config, maxGuesses: guessesFor(summary.difficulty) },
         wordId,
         inventory,
@@ -280,9 +277,9 @@ export async function loadWordSearch(requested?: number): Promise<Loaded<LoadedW
       };
     }
 
-    const { activity, config, seed } = generated;
+    const { config, seed } = generated;
 
-    return { ok: true, data: { activities, activity, config, seed, inventory } };
+    return { ok: true, data: { activities, config, seed, inventory } };
   } catch (error) {
     return describe(error, "word_search");
   }

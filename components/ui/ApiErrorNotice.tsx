@@ -1,3 +1,5 @@
+import { AlertCircleIcon } from "@/lib/icons";
+
 type ApiErrorNoticeProps = {
   title: string;
   message: string;
@@ -14,19 +16,7 @@ export function ApiErrorNotice({ title, message, hint }: ApiErrorNoticeProps) {
         aria-hidden="true"
         className="flex size-11 items-center justify-center rounded-xl bg-surface-muted text-primary"
       >
-        <svg
-          width="22"
-          height="22"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2.2"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        >
-          <circle cx="12" cy="12" r="9" />
-          <path d="M12 8v5M12 16.5v.01" />
-        </svg>
+        <AlertCircleIcon />
       </span>
       <h2 className="text-lg font-semibold text-foreground">{title}</h2>
       <p className="max-w-prose text-sm leading-6 text-muted">{message}</p>

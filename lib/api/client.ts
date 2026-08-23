@@ -1,6 +1,6 @@
 import "server-only";
 
-import type { Phoneme, PhonemeWord } from "@/lib/types";
+import type { Phoneme } from "@/lib/types";
 import type {
   ActivitySummary,
   ActivityType,
@@ -9,6 +9,7 @@ import type {
   ApiPhoneme,
   ApiWord,
   ApiWordListDetail,
+  CreateWordleActivityInput,
   GenerateResponse,
 } from "./types";
 
@@ -106,10 +107,6 @@ export function toPhoneme({ ipa, label, example, english }: ApiPhoneme): Phoneme
   return { ipa, label, example, english };
 }
 
-export function toPhonemeWord(word: ApiWord): PhonemeWord {
-  return { english: word.english, phonemes: word.phonemes.map(toPhoneme) };
-}
-
 export async function getPhonemes(search?: string): Promise<Phoneme[]> {
   const phonemes = await request<ApiPhoneme[]>("/api/phonemes", { query: { search } });
 
@@ -118,6 +115,18 @@ export async function getPhonemes(search?: string): Promise<Phoneme[]> {
 
 export async function getActivities(type?: ActivityType): Promise<ActivitySummary[]> {
   return request<ActivitySummary[]>("/api/activities", { query: { type } });
+}
+
+/** Saves a new Wordle configuration. Duplicate `name` is a 409 — it is unique per type. */
+export async function createActivity(
+  input: CreateWordleActivityInput,
+): Promise<ActivitySummary> {
+  return request<ActivitySummary>("/api/activities", { method: "POST", body: input });
+}
+
+/** Deletes a saved activity. The word list it points at is left untouched. */
+export async function deleteActivity(id: number): Promise<void> {
+  await request<void>(`/api/activities/${id}`, { method: "DELETE" });
 }
 
 export async function generateActivity(
@@ -137,10 +146,14 @@ export async function listWords(
 /** `phonemes` are IPA symbols, never ids. Duplicate `english` is a 409 — it is globally unique. */
 export async function createWord(input: {
   english: string;
-  hint?: string | null;
   phonemes: string[];
 }): Promise<ApiWord> {
   return request<ApiWord>("/api/words", { method: "POST", body: input });
+}
+
+/** Deletes a word outright — it cascades out of every word list that held it. */
+export async function deleteWord(id: number): Promise<void> {
+  await request<void>(`/api/words/${id}`, { method: "DELETE" });
 }
 
 export async function getWordList(id: number): Promise<ApiWordListDetail> {

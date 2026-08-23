@@ -82,7 +82,8 @@ components/
   layout/               # Header, Footer, NavBar, HamburgerMenu
   ui/                   # Card, PageShell, ApiErrorNotice
   phoneme/PhonemeTile   # the shared tile (IPA ⇄ English, tone, tooltip)
-  wordle/               # WordleGame, WordleBoard, PhonemeKeyboard, ExportButton
+  wordle/               # WordleGame, WordleBoard, PhonemeKeyboard, ExportButton,
+                        # DifficultySelector, WordControls, WordBuilder
   wordsearch/           # WordSearchActivity, WordSearchGame, WordSearchClues,
                         # ExportButton
 
@@ -95,6 +96,8 @@ lib/
   settings.ts           # cookie names, defaults, validation/normalisation
   settings-cookie.ts    # server-side cookie reads
   settings-actions.ts   # Server Actions that write the cookies
+  word-actions.ts       # Server Action that saves a built word
+  g2p.ts                # spelling -> sounds, as a correctable draft
   api/
     types.ts                 # the shapes phoneme-api returns
     client.ts                # server-only fetch wrapper + endpoint calls
@@ -117,7 +120,9 @@ client import is a build error rather than a leak.
 | --- | --- |
 | `GET /api/activities?type=` | The saved configurations a builder page can render. |
 | `GET /api/activities/:id/generate` | A playable config — `WordleConfig` / `WordSearchConfig` verbatim. |
-| `GET /api/phonemes` | Keyboard keys and word-search filler sounds. |
+| `GET /api/phonemes` | Keyboard keys, word-search fillers, and the sound picker. |
+| `POST /api/words` | Creating a word from the sound picker. |
+| `GET`/`PATCH` `/api/word-lists/:id` | Adding that word to a difficulty's list. |
 
 `generate` is drawn fresh on every request, so **reloading `/wordle` gives a
 different word** from the activity's word list — the fixed puzzle of Assessment
@@ -130,10 +135,53 @@ activity; without it the first one of that type is used. Every call sets
 `cache: "no-store"` — Next's default would otherwise fetch once during
 `next build` and serve that one puzzle forever.
 
-Activities also carry their own saved theme, tile display and tooltip settings.
-The **cookie preference wins** for the live page and its exports: it is the
-reader's own choice, and it is what the layout has already themed the page
-with. Per-activity settings belong to whoever edits the activity.
+## Difficulty
+
+The Wordle's difficulty selector switches between saved activities via
+`?difficulty=easy|medium|hard`, each with its own word list:
+
+| Difficulty | Word length | Guesses | List |
+| --- | --- | --- | --- |
+| easy | 3 sounds | 5 | easy Wordle words |
+| medium | 4 sounds | 6 | medium Wordle words |
+| hard | 5 sounds | 7 | hard Wordle words |
+
+Length and list travel together, so difficulty is a *selection*, not a setting:
+patching one activity's `wordLength` would return `409 UNSATISFIABLE`, because
+its list holds no word of the new length.
+
+## Choosing the word
+
+The answer key carries two controls. **Reload** draws another random word from the
+difficulty's list. **Edit** opens a builder where the sounds appear as you type:
+
+```
+snake          ->  /s/ /n/ /æɪ/ /k/     4 of 4 sounds — ready.
+                    s   n   a_e   k
+```
+
+Each letter group is matched to a sound live, so the sound count is checked before the
+word is saved. Every tile is tappable, because the transcription is a **draft, not an
+oracle**: English spelling is not phonemic, and there is no algorithm that reliably
+derives pronunciation from letters. [tophonetics](https://tophonetics.com) has the same
+limit and handles it the same way — it is a dictionary lookup over the CMU Pronouncing
+Dictionary, and it marks words it does not hold in red rather than guessing.
+
+`lib/g2p.ts` does greedy longest-match over the inventory's own `english` graphemes, plus
+a small phonics table for what spelling adds on top: `c`, `qu`, `x`, doubled consonants,
+digraphs like `aw`/`ea`/`igh`, and "magic e" (`snake` → `a_e` → `/æɪ/`). No IPA symbol is
+hardcoded — the extra rules name graphemes, which resolve through the inventory.
+
+Measured against the 105 seeded words it gets **95% of sound counts** and **80% of full
+sequences** right. The failures are loanwords (`beige`, `azure`, `mirage`) and `-sion`,
+which is exactly why a letter that matches nothing renders as a `?` the teacher must
+resolve, and why **Use word** stays disabled until the count matches with no unknowns
+left.
+
+A confirmed word is `POST`ed to `/api/words`, added to the difficulty's list, and then
+pinned via `?word=`. A spelling already in the database is reused rather than refused,
+provided its stored sounds are the right length. The dictionary therefore grows as it is
+used, and every word saved this way is one the algorithm never has to guess again.
 
 ## Settings and persistence
 

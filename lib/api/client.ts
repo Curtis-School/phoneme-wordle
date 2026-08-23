@@ -127,23 +127,14 @@ export async function generateActivity(
   return request<GenerateResponse>(`/api/activities/${id}/generate`, { query: opts });
 }
 
-/**
- * Words with their ordered phonemes. `search` matches the spelling, `length` counts
- * phonemes rather than letters — "boil" is four letters but three sounds.
- */
+/** `length` counts phonemes, not letters: "boil" is four letters, three sounds. */
 export async function listWords(
   params: { search?: string; phoneme?: string; length?: number } = {},
 ): Promise<ApiWord[]> {
   return request<ApiWord[]>("/api/words", { query: params });
 }
 
-/**
- * Creates a word from IPA symbols.
- *
- * Symbols, never phoneme ids — that is the API's contract. `english` is globally unique,
- * so a spelling that already exists anywhere raises `CONFLICT` rather than a second row.
- * An unrecognised symbol raises `VALIDATION_ERROR` naming every offender at once.
- */
+/** `phonemes` are IPA symbols, never ids. Duplicate `english` is a 409 — it is globally unique. */
 export async function createWord(input: {
   english: string;
   hint?: string | null;
@@ -156,13 +147,7 @@ export async function getWordList(id: number): Promise<ApiWordListDetail> {
   return request<ApiWordListDetail>(`/api/word-lists/${id}`);
 }
 
-/**
- * Replaces a list's entire membership, given as spellings in the order they should hold.
- *
- * There is no add-one endpoint: `WordListItem.position` is contiguous and unique per list,
- * so a partial change would leave gaps. Adding a word therefore means reading the current
- * membership, appending to it, and sending all of it back.
- */
+/** Replaces the whole membership; there is no add-one endpoint. Read, append, send it all back. */
 export async function setWordListWords(
   id: number,
   words: string[],

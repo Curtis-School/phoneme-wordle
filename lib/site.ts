@@ -1,7 +1,7 @@
 export const SITE = {
   title: "Phoneme Wordle",
   subtitle: "Phoneme Activity Builder",
-  assessment: "CSE3CWA — Assessment 1",
+  assessment: "CSE3CWA — Assessment 2",
   author: "Curtis Bowman",
   studentNumber: "20962451",
   repoUrl: "https://github.com/Curtis-School/phoneme-wordle",

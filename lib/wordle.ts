@@ -1,4 +1,4 @@
-import type { Phoneme } from "@/lib/types";
+import type { Difficulty, Phoneme } from "@/lib/types";
 
 export type GuessState = "correct" | "present" | "absent";
 
@@ -57,4 +57,10 @@ export function evaluateGuess(
 
 export function isSolved(states: readonly GuessState[]): boolean {
   return states.length > 0 && states.every((state) => state === "correct");
+}
+
+const GUESSES: Record<Difficulty, number> = { easy: 4, medium: 5, hard: 6 };
+
+export function guessesFor(difficulty: Difficulty): number {
+  return GUESSES[difficulty];
 }

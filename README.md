@@ -160,29 +160,6 @@ snake          ->  /s/ /n/ /æɪ/ /k/     4 of 4 sounds — ready.
                     s   n   a_e   k
 ```
 
-Each letter group is matched to a sound live, so the sound count is checked before the
-word is saved. Every tile is tappable, because the transcription is a **draft, not an
-oracle**: English spelling is not phonemic, and there is no algorithm that reliably
-derives pronunciation from letters. [tophonetics](https://tophonetics.com) has the same
-limit and handles it the same way — it is a dictionary lookup over the CMU Pronouncing
-Dictionary, and it marks words it does not hold in red rather than guessing.
-
-`lib/g2p.ts` does greedy longest-match over the inventory's own `english` graphemes, plus
-a small phonics table for what spelling adds on top: `c`, `qu`, `x`, doubled consonants,
-digraphs like `aw`/`ea`/`igh`, and "magic e" (`snake` → `a_e` → `/æɪ/`). No IPA symbol is
-hardcoded — the extra rules name graphemes, which resolve through the inventory.
-
-Measured against the 105 seeded words it gets **95% of sound counts** and **80% of full
-sequences** right. The failures are loanwords (`beige`, `azure`, `mirage`) and `-sion`,
-which is exactly why a letter that matches nothing renders as a `?` the teacher must
-resolve, and why **Use word** stays disabled until the count matches with no unknowns
-left.
-
-A confirmed word is `POST`ed to `/api/words`, added to the difficulty's list, and then
-pinned via `?word=`. A spelling already in the database is reused rather than refused,
-provided its stored sounds are the right length. The dictionary therefore grows as it is
-used, and every word saved this way is one the algorithm never has to guess again.
-
 ## Settings and persistence
 
 Preferences are stored in three cookies (one year, `SameSite=Lax`), written by

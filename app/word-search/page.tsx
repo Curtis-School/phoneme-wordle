@@ -1,21 +1,38 @@
 import { PageShell } from "@/components/ui/PageShell";
+import { ApiErrorNotice } from "@/components/ui/ApiErrorNotice";
 import { WordSearchActivity } from "@/components/wordsearch/WordSearchActivity";
-import {
-  getFixedWordSearchConfig,
-  getFixedWordSearchWords,
-  getPhonemeInventory,
-} from "@/lib/data";
+import { loadWordSearch, parseActivityParam } from "@/lib/api/builder";
 import { getActivitySettings } from "@/lib/settings-cookie";
 
-export default async function WordSearchPage() {
-  const config = getFixedWordSearchConfig();
-  const words = getFixedWordSearchWords(5);
+const INTRO =
+  "Find every word that features the target sound by dragging across the grid, then export a self-contained copy that plays offline.";
+
+export default async function WordSearchPage({
+  searchParams,
+}: PageProps<"/word-search">) {
+  const { activity: requested } = await searchParams;
+  const result = await loadWordSearch(parseActivityParam(requested));
+
   const settings = await getActivitySettings();
+
+  if (!result.ok) {
+    return (
+      <PageShell title="Phoneme Word Search" intro={INTRO}>
+        <ApiErrorNotice
+          title={result.title}
+          message={result.message}
+          hint={result.hint}
+        />
+      </PageShell>
+    );
+  }
+
+  const { config, inventory, seed } = result.data;
 
   return (
     <PageShell
       title="Phoneme Word Search"
-      intro="Find every word that features the target sound by dragging across the grid, then export a self-contained copy that plays offline."
+      intro={INTRO}
       aside={
         <div className="flex items-center gap-3.5 rounded-2xl border border-border bg-surface py-3 pl-3.5 pr-4.5">
           <span className="flex size-12 flex-col items-center justify-center rounded-xl bg-primary leading-none text-on-primary">
@@ -37,10 +54,10 @@ export default async function WordSearchPage() {
     >
       <WordSearchActivity
         phoneme={config.phoneme}
-        words={words}
-        fillers={getPhonemeInventory()}
+        words={config.words}
+        fillers={inventory}
         size={config.size}
-        initialSeed={42}
+        initialSeed={seed}
         settings={settings}
       />
     </PageShell>

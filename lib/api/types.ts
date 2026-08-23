@@ -23,7 +23,6 @@ export type ApiWord = {
   updatedAt: string;
 };
 
-/** `GET /api/word-lists/:id` — the list with its membership in the teacher's order. */
 export type ApiWordListDetail = {
   id: number;
   name: string;

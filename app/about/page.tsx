@@ -5,7 +5,7 @@ export default function AboutPage() {
   return (
     <PageShell
       title="About"
-      intro="Phoneme Wordle is a frontend builder that lets Speech Pathology teachers create and preview phoneme-based Wordle and Word Search activities, then export each as a single playable HTML file. Dynamic word lists are coming soon! Assessment 1 is frontend only."
+      intro="Phoneme Wordle is a frontend builder that lets Speech Pathology teachers create and preview phoneme-based Wordle and Word Search activities, then export each as a single playable HTML file."
     >
       <dl className="grid max-w-md grid-cols-[auto_1fr] gap-x-6 gap-y-2 rounded-2xl border border-border bg-surface p-6 text-sm">
         <dt className="font-medium text-muted">Developer</dt>

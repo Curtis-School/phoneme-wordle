@@ -106,7 +106,7 @@ export function WordSearchGame({
   const progress = Math.round((found.length / puzzle.words.length) * 100);
 
   return (
-    <div className="grid gap-5 lg:grid-cols-[minmax(0,1.5fr)_minmax(300px,0.85fr)]">
+    <div className="grid items-start gap-5 lg:grid-cols-[minmax(0,1.5fr)_minmax(300px,0.85fr)]">
       <section className="flex flex-col rounded-2xl border border-border bg-surface p-5">
         <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-3 border-b border-border pb-4">
           <div className="flex items-center gap-3">
@@ -144,7 +144,7 @@ export function WordSearchGame({
           </div>
         </div>
 
-        <div className="flex flex-1 items-center justify-center overflow-x-auto pt-4">
+        <div className="flex justify-center overflow-x-auto pt-4">
           <div
             ref={gridRef}
             role="grid"

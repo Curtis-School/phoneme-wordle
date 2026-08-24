@@ -69,6 +69,15 @@ function place(
   return cells;
 }
 
+/**
+ * Fixed, because no word can exceed MAX_WORD_SOUNDS: the grid always has room, so the
+ * puzzle's difficulty comes from how many words the list holds, not from its size.
+ */
+export const WORD_SEARCH_SIZE = 8;
+
+/** How many words this grid can hold before placement starts failing. */
+export const MAX_WORD_SEARCH_WORDS = 8;
+
 export function generateWordSearch(
   words: readonly PhonemeWord[],
   size: number,

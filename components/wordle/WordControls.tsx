@@ -2,9 +2,9 @@
 
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
-import { WordBuilder } from "./WordBuilder";
+import { WordBuilder } from "@/components/phoneme/WordBuilder";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
-import { deleteWordById } from "@/lib/word-actions";
+import { deleteWordById, saveWord } from "@/lib/word-actions";
 import { PencilIcon, ReloadIcon, TrashIcon } from "@/lib/icons";
 import type { Difficulty, Phoneme, SymbolDisplay } from "@/lib/types";
 
@@ -111,10 +111,21 @@ export function WordControls({
       {editing ? (
         <WordBuilder
           inventory={inventory}
-          wordLength={wordLength}
-          wordListId={wordListId}
+          requirement={{ kind: "length", wordLength }}
           display={display}
-          onSaved={show}
+          submitLabel="Use word"
+          onSubmit={async ({ english, phonemes }) => {
+            const result = await saveWord({
+              english,
+              phonemes,
+              wordListId,
+              expectedLength: wordLength,
+            });
+
+            if (!result.ok) return result.message;
+
+            show(result.english);
+          }}
           onCancel={() => setEditing(false)}
           onSpellingChange={(spelling) => {
             if (!spelling.trim()) setDismissedError(error);

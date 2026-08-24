@@ -10,7 +10,7 @@ import type {
   ApiWord,
   ApiWordListDetail,
   ApiWordListSummary,
-  CreateWordleActivityInput,
+  CreateActivityInput,
   GenerateResponse,
 } from "./types";
 
@@ -118,9 +118,9 @@ export async function getActivities(type?: ActivityType): Promise<ActivitySummar
   return request<ActivitySummary[]>("/api/activities", { query: { type } });
 }
 
-/** Saves a new Wordle configuration. Duplicate `name` is a 409 — it is unique per type. */
+/** Saves a new configuration. Duplicate `name` is a 409 — it is unique per type. */
 export async function createActivity(
-  input: CreateWordleActivityInput,
+  input: CreateActivityInput,
 ): Promise<ActivitySummary> {
   return request<ActivitySummary>("/api/activities", { method: "POST", body: input });
 }
@@ -162,6 +162,16 @@ export async function listWordLists(
   params: { search?: string; phoneme?: string } = {},
 ): Promise<ApiWordListSummary[]> {
   return request<ApiWordListSummary[]>("/api/word-lists", { query: params });
+}
+
+/** `targetPhoneme` is an IPA symbol and `words` are spellings, both resolved by the API. */
+export async function createWordList(input: {
+  name: string;
+  description?: string;
+  targetPhoneme: string;
+  words: string[];
+}): Promise<ApiWordListDetail> {
+  return request<ApiWordListDetail>("/api/word-lists", { method: "POST", body: input });
 }
 
 export async function getWordList(id: number): Promise<ApiWordListDetail> {

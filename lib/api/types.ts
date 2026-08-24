@@ -61,18 +61,34 @@ export type ActivitySummary =
       wordCount: number;
     });
 
-export type CreateWordleActivityInput = {
-  type: "wordle";
+type CreateActivityBase = {
   name: string;
   difficulty: Difficulty;
   wordListId: number;
-  maxGuesses: number;
-  wordLength: number;
-  wordId?: number;
   symbolDisplay?: ActivitySettings["symbolDisplay"];
   showTooltips?: boolean;
   theme?: ActivitySettings["theme"];
 };
+
+export type CreateWordleActivityInput = CreateActivityBase & {
+  type: "wordle";
+  maxGuesses: number;
+  wordLength: number;
+  wordId?: number;
+};
+
+export type CreateWordSearchActivityInput = CreateActivityBase & {
+  type: "word_search";
+  /** IPA symbol of the sound being practised. */
+  targetPhoneme: string;
+  gridSize: number;
+  wordCount: number;
+  seed?: number;
+};
+
+export type CreateActivityInput =
+  | CreateWordleActivityInput
+  | CreateWordSearchActivityInput;
 
 export type GeneratedActivity = {
   id: number;

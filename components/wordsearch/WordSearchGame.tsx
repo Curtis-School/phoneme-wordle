@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useRef, useState } from "react";
-import type { PointerEvent as ReactPointerEvent, ReactNode } from "react";
+import type { PointerEvent as ReactPointerEvent } from "react";
 import type { ActivitySettings, PhonemeWord } from "@/lib/types";
 import {
   lineBetween,
@@ -11,14 +11,14 @@ import {
 } from "@/lib/wordsearch";
 import { phonemeHint } from "@/lib/phoneme";
 import { PhonemeTile } from "@/components/phoneme/PhonemeTile";
-import { WordSearchClues } from "./WordSearchClues";
+import { WordSearchClues, type WordSearchEdit } from "./WordSearchClues";
 
 type WordSearchGameProps = {
   puzzle: GeneratedWordSearch;
   words: readonly PhonemeWord[];
   settings: ActivitySettings;
   onCycle?: () => void;
-  takeHome?: ReactNode;
+  edit?: WordSearchEdit;
 };
 
 const ACTION_BUTTON =
@@ -40,7 +40,7 @@ export function WordSearchGame({
   words,
   settings,
   onCycle,
-  takeHome,
+  edit,
 }: WordSearchGameProps) {
   const gridRef = useRef<HTMLDivElement>(null);
   const startRef = useRef<Cell | null>(null);
@@ -195,11 +195,11 @@ export function WordSearchGame({
       <div className="flex flex-col gap-4">
         <WordSearchClues
           words={words}
+          edit={edit}
           found={shownFound}
           display={settings.symbolDisplay}
           showTooltip={settings.showTooltips}
         />
-        {takeHome}
       </div>
     </div>
   );

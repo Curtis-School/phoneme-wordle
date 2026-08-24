@@ -1,4 +1,4 @@
-import type { Phoneme, PhonemeWord } from "@/lib/types";
+import type { Difficulty, Phoneme, PhonemeWord } from "@/lib/types";
 
 type Direction = { dr: number; dc: number };
 
@@ -77,6 +77,13 @@ export const WORD_SEARCH_SIZE = 8;
 
 /** How many words this grid can hold before placement starts failing. */
 export const MAX_WORD_SEARCH_WORDS = 8;
+
+/** With the grid fixed, the only thing that makes a puzzle harder is more words to find. */
+export function difficultyForWordCount(count: number): Difficulty {
+  if (count <= 3) return "easy";
+
+  return count <= 5 ? "medium" : "hard";
+}
 
 export function generateWordSearch(
   words: readonly PhonemeWord[],

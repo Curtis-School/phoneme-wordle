@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef, useState, useTransition } from "react";
+import { useRouter } from "next/navigation";
 import { PhonemeTile } from "@/components/phoneme/PhonemeTile";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { buildWordSearchHtml } from "@/lib/html-export/word-search-template";
@@ -26,7 +27,13 @@ const DIFFICULTY_LOZENGE: Record<Difficulty, string> = {
   hard: "bg-absent/10 text-absent",
 };
 
-export function SavedActivitiesPanel() {
+type SavedActivitiesPanelProps = {
+  /** The activity the page is currently showing, marked so it reads as the open one. */
+  openId: number | null;
+};
+
+export function SavedActivitiesPanel({ openId }: SavedActivitiesPanelProps) {
+  const router = useRouter();
   const dialogRef = useRef<HTMLDialogElement>(null);
   const [status, setStatus] = useState<"idle" | "loading" | "ok" | "error">("idle");
   const [data, setData] = useState<SavedWordSearchPreview[]>([]);
@@ -36,7 +43,7 @@ export function SavedActivitiesPanel() {
   const [pendingDelete, setPendingDelete] = useState<SavedWordSearchPreview | null>(null);
   const [, startTransition] = useTransition();
 
-  function open() {
+  function openDialog() {
     dialogRef.current?.showModal();
     setStatus("loading");
     setDeleteError(undefined);
@@ -52,6 +59,12 @@ export function SavedActivitiesPanel() {
         setStatus("error");
       }
     });
+  }
+
+  /** Loads the activity into the page, where its grid and clue list can be edited. */
+  function openActivity(item: SavedWordSearchPreview) {
+    dialogRef.current?.close();
+    router.push(`/word-search?activity=${item.id}`);
   }
 
   function download(item: SavedWordSearchPreview) {
@@ -81,7 +94,7 @@ export function SavedActivitiesPanel() {
 
   return (
     <>
-      <button type="button" onClick={open} className={TRIGGER_CLASS}>
+      <button type="button" onClick={openDialog} className={TRIGGER_CLASS}>
         <ListIcon />
         Saved activities
       </button>
@@ -125,20 +138,27 @@ export function SavedActivitiesPanel() {
             {data.map((item) => (
               <li
                 key={item.id}
-                className={`flex h-14 shrink-0 items-center gap-2 overflow-x-auto rounded-xl border border-border ${DIFFICULTY_ACCENT[item.difficulty]} border-l-4 bg-surface-muted px-3`}
+                className={`flex h-14 shrink-0 items-center gap-2 overflow-x-auto rounded-xl border ${item.id === openId ? "border-primary" : "border-border"} ${DIFFICULTY_ACCENT[item.difficulty]} border-l-4 bg-surface-muted px-3`}
               >
-                <PhonemeTile label={item.phoneme.ipa} size="sm" />
-                <span className="shrink-0 text-sm font-semibold text-foreground">
-                  {item.name}
-                </span>
-                <span className="shrink-0 text-xs font-semibold text-muted">
-                  {item.words.length} words
-                </span>
-                <span
-                  className={`ml-auto shrink-0 rounded-full px-2.5 py-1 text-xs font-semibold capitalize ${DIFFICULTY_LOZENGE[item.difficulty]}`}
+                <button
+                  type="button"
+                  onClick={() => openActivity(item)}
+                  title={`Open “${item.name}” to play and edit it`}
+                  className="flex min-w-0 flex-1 items-center gap-2 rounded-lg text-left transition-opacity hover:opacity-70"
                 >
-                  {item.difficulty}
-                </span>
+                  <PhonemeTile label={item.phoneme.ipa} size="sm" />
+                  <span className="shrink-0 text-sm font-semibold text-foreground">
+                    {item.name}
+                  </span>
+                  <span className="shrink-0 text-xs font-semibold text-muted">
+                    {item.words.length} words
+                  </span>
+                  <span
+                    className={`ml-auto shrink-0 rounded-full px-2.5 py-1 text-xs font-semibold capitalize ${DIFFICULTY_LOZENGE[item.difficulty]}`}
+                  >
+                    {item.difficulty}
+                  </span>
+                </button>
                 <span
                   title={item.settings.theme === "dark" ? "Dark theme" : "Light theme"}
                   className="flex shrink-0 items-center justify-center text-muted"

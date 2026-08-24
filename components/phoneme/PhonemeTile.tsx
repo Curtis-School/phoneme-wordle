@@ -90,6 +90,18 @@ export function PhonemeTile({
   );
 }
 
-export function PhonemeStrip({ children }: { children: ReactNode }) {
-  return <div className="flex flex-wrap items-center gap-1.5">{children}</div>;
+export function PhonemeStrip({
+  children,
+  nowrap = false,
+}: {
+  children: ReactNode;
+  nowrap?: boolean;
+}) {
+  return (
+    <div
+      className={`flex items-center gap-1.5 ${nowrap ? "flex-nowrap" : "flex-wrap"}`}
+    >
+      {children}
+    </div>
+  );
 }

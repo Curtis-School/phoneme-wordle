@@ -3,6 +3,7 @@ import { ApiErrorNotice } from "@/components/ui/ApiErrorNotice";
 import { WordSearchActivity } from "@/components/wordsearch/WordSearchActivity";
 import { TargetSoundControls } from "@/components/wordsearch/TargetSoundControls";
 import { SavedActivitiesPanel } from "@/components/wordsearch/SavedActivitiesPanel";
+import { parseActivityParam } from "@/lib/api/builder/shared";
 import {
   loadWordSearch,
   parsePhonemeParam,
@@ -15,8 +16,9 @@ const INTRO =
 export default async function WordSearchPage({
   searchParams,
 }: PageProps<"/word-search">) {
-  const { phoneme: requested } = await searchParams;
+  const { activity, phoneme: requested } = await searchParams;
   const result = await loadWordSearch({
+    activity: parseActivityParam(activity),
     phoneme: parsePhonemeParam(requested),
   });
 
@@ -42,7 +44,10 @@ export default async function WordSearchPage({
     size,
     seed,
     wordListId,
-    wordListName,
+    wordListWordCount,
+    wordListActivityCount,
+    activityId,
+    activityName,
   } = result.data;
 
   // The first two cells of the toolbar row; the activity adds the export card after them.
@@ -67,7 +72,7 @@ export default async function WordSearchPage({
           <TargetSoundControls current={phoneme.ipa} options={options} />
         </span>
       </div>
-      <SavedActivitiesPanel />
+      <SavedActivitiesPanel openId={activityId} />
     </>
   );
 
@@ -88,7 +93,7 @@ export default async function WordSearchPage({
         </>
       ) : (
         <WordSearchActivity
-          key={phoneme.ipa}
+          key={activityId ?? phoneme.ipa}
           phoneme={phoneme}
           words={words}
           fillers={inventory}
@@ -96,7 +101,10 @@ export default async function WordSearchPage({
           initialSeed={seed}
           settings={settings}
           wordListId={wordListId}
-          wordListName={wordListName}
+          wordListWordCount={wordListWordCount}
+          wordListActivityCount={wordListActivityCount}
+          activityId={activityId}
+          activityName={activityName}
           controls={controls}
         />
       )}

@@ -90,6 +90,14 @@ export type CreateActivityInput =
   | CreateWordleActivityInput
   | CreateWordSearchActivityInput;
 
+/**
+ * A partial activity. `type` is immutable, so it is absent here; the API merges the patch
+ * onto the stored row and revalidates the result as a whole.
+ */
+export type UpdateActivityInput = Partial<
+  Omit<CreateWordleActivityInput, "type"> & Omit<CreateWordSearchActivityInput, "type">
+>;
+
 export type GeneratedActivity = {
   id: number;
   name: string;

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState, useTransition } from "react";
+import { useRouter } from "next/navigation";
 import { PhonemeStrip, PhonemeTile } from "@/components/phoneme/PhonemeTile";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { buildWordleHtml } from "@/lib/html-export/wordle-template";
@@ -39,7 +40,7 @@ export function SavedActivitiesPanel({
   return (
     <div className="mb-3 flex flex-col gap-2">
       <SaveButton summary={summary} wordId={wordId} englishWord={englishWord} settings={settings} />
-      <ViewDialog />
+      <ViewDialog openId={summary.id} />
     </div>
   );
 }
@@ -116,7 +117,8 @@ const DIFFICULTY_LOZENGE: Record<Difficulty, string> = {
   hard: "bg-absent/10 text-absent",
 };
 
-function ViewDialog() {
+function ViewDialog({ openId }: { openId: number }) {
+  const router = useRouter();
   const dialogRef = useRef<HTMLDialogElement>(null);
   const [status, setStatus] = useState<"idle" | "loading" | "ok" | "error">("idle");
   const [data, setData] = useState<SavedWordlePreview[]>([]);
@@ -125,7 +127,7 @@ function ViewDialog() {
   const [pendingDelete, setPendingDelete] = useState<SavedWordlePreview | null>(null);
   const [, startTransition] = useTransition();
 
-  function open() {
+  function openDialog() {
     dialogRef.current?.showModal();
     setStatus("loading");
     setDeleteError(undefined);
@@ -140,6 +142,12 @@ function ViewDialog() {
         setStatus("error");
       }
     });
+  }
+
+  /** Loads the activity into the page, where its word and difficulty can be changed. */
+  function openActivity(item: SavedWordlePreview) {
+    dialogRef.current?.close();
+    router.push(`/wordle?activity=${item.id}`);
   }
 
   function download(item: SavedWordlePreview) {
@@ -166,14 +174,14 @@ function ViewDialog() {
 
   return (
     <>
-      <button type="button" onClick={open} className={TRIGGER_CLASS}>
+      <button type="button" onClick={openDialog} className={TRIGGER_CLASS}>
         <ListIcon />
         Saved activities
       </button>
 
       <dialog
         ref={dialogRef}
-        className="m-auto w-[min(92vw,30rem)] rounded-2xl border border-border bg-surface p-5 text-foreground backdrop:bg-black/50"
+        className="m-auto w-[min(92vw,34rem)] rounded-2xl border border-border bg-surface p-5 text-foreground backdrop:bg-black/50"
       >
         <div className="flex items-center justify-between gap-3">
           <h3 className="text-sm font-semibold text-foreground">Saved Wordle activities</h3>
@@ -210,21 +218,28 @@ function ViewDialog() {
             {data.map((item) => (
               <li
                 key={item.id}
-                className={`flex h-14 shrink-0 items-center gap-2 overflow-x-auto rounded-xl border border-border ${DIFFICULTY_ACCENT[item.difficulty]} border-l-4 bg-surface-muted px-3`}
+                className={`flex h-14 shrink-0 items-center gap-2 overflow-x-auto rounded-xl border ${item.id === openId ? "border-primary" : "border-border"} ${DIFFICULTY_ACCENT[item.difficulty]} border-l-4 bg-surface-muted px-3`}
               >
-                <span className="shrink-0 text-sm font-semibold text-foreground">
-                  {item.config.englishWord}
-                </span>
-                <PhonemeStrip>
-                  {item.config.word.map((phoneme, index) => (
-                    <PhonemeTile key={index} label={phoneme.ipa} size="sm" />
-                  ))}
-                </PhonemeStrip>
-                <span
-                  className={`ml-auto shrink-0 rounded-full px-2.5 py-1 text-xs font-semibold capitalize ${DIFFICULTY_LOZENGE[item.difficulty]}`}
+                <button
+                  type="button"
+                  onClick={() => openActivity(item)}
+                  title={`Open “${item.name}” to play and edit it`}
+                  className="flex min-w-0 flex-1 items-center gap-2 rounded-lg text-left transition-opacity hover:opacity-70"
                 >
-                  {item.difficulty}
-                </span>
+                  <span className="shrink-0 text-sm font-semibold text-foreground">
+                    {item.config.englishWord}
+                  </span>
+                  <PhonemeStrip nowrap>
+                    {item.config.word.map((phoneme, index) => (
+                      <PhonemeTile key={index} label={phoneme.ipa} size="sm" />
+                    ))}
+                  </PhonemeStrip>
+                  <span
+                    className={`ml-auto shrink-0 rounded-full px-2.5 py-1 text-xs font-semibold capitalize ${DIFFICULTY_LOZENGE[item.difficulty]}`}
+                  >
+                    {item.difficulty}
+                  </span>
+                </button>
                 <span
                   title={item.settings.theme === "dark" ? "Dark theme" : "Light theme"}
                   className="flex shrink-0 items-center justify-center text-muted"

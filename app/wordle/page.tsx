@@ -9,9 +9,9 @@ import { ExportButton } from "@/components/wordle/ExportButton";
 import { AnswerKeyHeader } from "@/components/wordle/AnswerKeyHeader";
 import { SavedActivitiesPanel } from "@/components/wordle/SavedActivitiesPanel";
 import { WordControls } from "@/components/wordle/WordControls";
+import { parseActivityParam } from "@/lib/api/builder/shared";
 import {
   loadWordle,
-  parseActivityParam,
   parseDifficultyParam,
   parseWordParam,
 } from "@/lib/api/builder/wordle";

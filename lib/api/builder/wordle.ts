@@ -26,13 +26,6 @@ export function parseWordParam(value: string | string[] | undefined): string | u
   return first(value)?.trim() || undefined;
 }
 
-export function parseActivityParam(value: string | string[] | undefined): number | undefined {
-  const raw = first(value);
-  const id = Number(raw);
-
-  return raw !== undefined && Number.isInteger(id) && id > 0 ? id : undefined;
-}
-
 export function parseDifficultyParam(
   value: string | string[] | undefined,
 ): Difficulty | undefined {

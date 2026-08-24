@@ -11,6 +11,13 @@ export function first(value: string | string[] | undefined): string | undefined 
   return Array.isArray(value) ? value[0] : value;
 }
 
+export function parseActivityParam(value: string | string[] | undefined): number | undefined {
+  const raw = first(value);
+  const id = Number(raw);
+
+  return raw !== undefined && Number.isInteger(id) && id > 0 ? id : undefined;
+}
+
 function label(type: ActivityType): string {
   return type === "wordle" ? "Wordle" : "word search";
 }

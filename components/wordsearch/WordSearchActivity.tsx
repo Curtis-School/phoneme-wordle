@@ -18,7 +18,11 @@ type WordSearchActivityProps = {
   initialSeed: number;
   settings: ActivitySettings;
   wordListId: number | null;
-  wordListName: string | null;
+  wordListWordCount: number;
+  wordListActivityCount: number;
+  /** Set when the page was opened from a saved activity, so edits can be written back to it. */
+  activityId: number | null;
+  activityName: string | null;
   /** The target-sound card and saved-activities button, which lead the toolbar row. */
   controls: ReactNode;
 };
@@ -31,7 +35,10 @@ export function WordSearchActivity({
   initialSeed,
   settings,
   wordListId,
-  wordListName,
+  wordListWordCount,
+  wordListActivityCount,
+  activityId,
+  activityName,
   controls,
 }: WordSearchActivityProps) {
   const [seed, setSeed] = useState(initialSeed);
@@ -109,7 +116,10 @@ export function WordSearchActivity({
         seed={seed}
         settings={settings}
         wordListId={wordListId}
-        wordListName={wordListName}
+        wordListWordCount={wordListWordCount}
+        wordListActivityCount={wordListActivityCount}
+        activityId={activityId}
+        activityName={activityName}
         onClose={() => setSaving(false)}
         onSaved={(name) => {
           setSaving(false);

@@ -12,6 +12,7 @@ import type {
   ApiWordListSummary,
   CreateActivityInput,
   GenerateResponse,
+  UpdateActivityInput,
 } from "./types";
 
 const DEFAULT_BASE_URL = "http://localhost:3001";
@@ -123,6 +124,21 @@ export async function createActivity(
   input: CreateActivityInput,
 ): Promise<ActivitySummary> {
   return request<ActivitySummary>("/api/activities", { method: "POST", body: input });
+}
+
+export async function getActivity(id: number): Promise<ActivitySummary> {
+  return request<ActivitySummary>(`/api/activities/${id}`);
+}
+
+/** Edits a saved activity in place. `type` cannot change; every other field can. */
+export async function updateActivity(
+  id: number,
+  patch: UpdateActivityInput,
+): Promise<ActivitySummary> {
+  return request<ActivitySummary>(`/api/activities/${id}`, {
+    method: "PATCH",
+    body: patch,
+  });
 }
 
 /** Deletes a saved activity. The word list it points at is left untouched. */

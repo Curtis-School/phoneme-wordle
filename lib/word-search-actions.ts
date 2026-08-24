@@ -13,6 +13,7 @@ import {
   listWords,
   setWordListWords,
   toPhoneme,
+  updateActivity,
 } from "@/lib/api/client";
 import { MAX_WORD_SOUNDS } from "@/lib/wordle";
 import {
@@ -103,6 +104,8 @@ export type SaveWordSearchInput = {
   /** "overwrite" replaces the membership of `wordListId`; "new" builds a list of its own. */
   mode: "overwrite" | "new";
   wordListId: number | null;
+  /** Set to edit that saved activity in place instead of creating another one. */
+  activityId?: number | null;
 };
 
 export type SaveWordSearchResult = { ok: true } | { ok: false; message: string };
@@ -143,20 +146,27 @@ export async function saveWordSearchActivity(
     return { ok: false, message: message(error, "Could not save the word list.") };
   }
 
+  const configuration = {
+    name,
+    difficulty: difficultyForWordCount(input.words.length),
+    wordListId,
+    targetPhoneme: input.targetPhoneme,
+    gridSize: WORD_SEARCH_SIZE,
+    wordCount: input.words.length,
+    seed: input.seed,
+    symbolDisplay: input.settings.symbolDisplay,
+    showTooltips: input.settings.showTooltips,
+    theme: input.settings.theme,
+  };
+
   try {
-    await createActivity({
-      type: "word_search",
-      name,
-      difficulty: difficultyForWordCount(input.words.length),
-      wordListId,
-      targetPhoneme: input.targetPhoneme,
-      gridSize: WORD_SEARCH_SIZE,
-      wordCount: input.words.length,
-      seed: input.seed,
-      symbolDisplay: input.settings.symbolDisplay,
-      showTooltips: input.settings.showTooltips,
-      theme: input.settings.theme,
-    });
+    // Reopened from the saved-activities list: edit that row rather than leaving a second
+    // activity behind under the same name.
+    if (input.activityId != null) {
+      await updateActivity(input.activityId, configuration);
+    } else {
+      await createActivity({ type: "word_search", ...configuration });
+    }
   } catch (error) {
     return { ok: false, message: message(error, "Could not save the activity.") };
   }

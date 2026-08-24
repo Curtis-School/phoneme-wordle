@@ -1,30 +1,77 @@
+import type { ReactNode } from "react";
 import {
   PhonemeStrip,
   PhonemeTile,
 } from "@/components/phoneme/PhonemeTile";
 import { phonemeHint } from "@/lib/phoneme";
+import { PencilIcon, SaveIcon, TrashIcon } from "@/lib/icons";
 import type { PhonemeWord, SymbolDisplay } from "@/lib/types";
+
+/** Editing the clue list is a draft: nothing reaches the API until the activity is saved. */
+export type WordSearchEdit = {
+  editing: boolean;
+  onToggle: () => void;
+  onSave: () => void;
+  onRemove: (english: string) => void;
+  /** The add-a-word form, shown under the list while editing. */
+  builder: ReactNode;
+};
 
 type WordSearchCluesProps = {
   words: readonly PhonemeWord[];
   found?: readonly string[];
   display?: SymbolDisplay;
   showTooltip?: boolean;
+  edit?: WordSearchEdit;
 };
+
+const HEADER_BUTTON =
+  "flex size-8 items-center justify-center rounded-lg border border-border text-muted transition-colors hover:border-primary hover:text-foreground";
 
 export function WordSearchClues({
   words,
   found = [],
   display = "ipa",
   showTooltip = true,
+  edit,
 }: WordSearchCluesProps) {
+  const editing = edit?.editing ?? false;
   return (
     <section className="overflow-hidden rounded-2xl border border-border bg-surface">
       <div className="flex items-center justify-between border-b border-border px-4.5 py-4">
         <h2 className="text-sm font-semibold text-foreground">Words to find</h2>
-        <span className="text-xs font-semibold text-muted">
-          {words.length} words
-        </span>
+        <div className="flex items-center gap-2">
+          <span className="text-xs font-semibold text-muted">
+            {words.length} words
+          </span>
+          {edit ? (
+            <>
+              <button
+                type="button"
+                onClick={edit.onToggle}
+                aria-label={editing ? "Stop editing the word list" : "Edit the word list"}
+                aria-expanded={editing}
+                title={editing ? "Done editing" : "Edit the word list"}
+                className={
+                  editing
+                    ? "flex size-8 items-center justify-center rounded-lg border border-primary bg-primary text-on-primary"
+                    : HEADER_BUTTON
+                }
+              >
+                <PencilIcon />
+              </button>
+              <button
+                type="button"
+                onClick={edit.onSave}
+                aria-label="Save this activity"
+                title="Save this activity"
+                className={HEADER_BUTTON}
+              >
+                <SaveIcon />
+              </button>
+            </>
+          ) : null}
+        </div>
       </div>
       <ul>
         {words.map((word) => {
@@ -62,18 +109,31 @@ export function WordSearchClues({
                   ))}
                 </PhonemeStrip>
               </span>
-              <span
-                aria-hidden="true"
-                className={`w-5 text-center text-sm font-bold text-primary ${
-                  isFound ? "opacity-100" : "opacity-15"
-                }`}
-              >
-                ✓
-              </span>
+              {editing ? (
+                <button
+                  type="button"
+                  onClick={() => edit?.onRemove(word.english)}
+                  aria-label={`Remove ${word.english} from the list`}
+                  title="Remove from this list"
+                  className="flex size-8 shrink-0 items-center justify-center rounded-lg border border-border text-muted transition-colors hover:border-present hover:text-present"
+                >
+                  <TrashIcon />
+                </button>
+              ) : (
+                <span
+                  aria-hidden="true"
+                  className={`w-5 text-center text-sm font-bold text-primary ${
+                    isFound ? "opacity-100" : "opacity-15"
+                  }`}
+                >
+                  ✓
+                </span>
+              )}
             </li>
           );
         })}
       </ul>
+      {editing ? <div className="border-t border-border p-3">{edit?.builder}</div> : null}
     </section>
   );
 }

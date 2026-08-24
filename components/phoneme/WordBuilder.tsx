@@ -4,25 +4,41 @@ import { useEffect, useMemo, useRef, useState, useTransition } from "react";
 import { PhonemeTile } from "@/components/phoneme/PhonemeTile";
 import { transcribe } from "@/lib/g2p";
 import { phonemeHint } from "@/lib/phoneme";
-import { saveWord } from "@/lib/word-actions";
 import type { Phoneme, SymbolDisplay } from "@/lib/types";
+
+/** What the built word has to satisfy: an exact sound count, or a sound it must contain. */
+export type WordRequirement =
+  | { kind: "length"; wordLength: number }
+  | { kind: "contains"; phoneme: Phoneme; maxSounds: number };
 
 type WordBuilderProps = {
   inventory: readonly Phoneme[];
-  wordLength: number;
-  wordListId: number;
+  requirement: WordRequirement;
   display: SymbolDisplay;
-  onSaved: (english: string) => void;
+  submitLabel: string;
+  onSubmit: (word: { english: string; phonemes: string[] }) => Promise<string | undefined>;
   onCancel: () => void;
   onSpellingChange?: (spelling: string) => void;
 };
 
+function hint(requirement: WordRequirement, count: number): string {
+  if (requirement.kind === "length") {
+    return `${count} ${count === 1 ? "sound" : "sounds"} — this difficulty needs ${requirement.wordLength}.`;
+  }
+
+  if (count > requirement.maxSounds) {
+    return `${count} sounds — the grid only fits ${requirement.maxSounds}.`;
+  }
+
+  return `No ${requirement.phoneme.ipa} yet — the word must contain the target sound.`;
+}
+
 export function WordBuilder({
   inventory,
-  wordLength,
-  wordListId,
+  requirement,
   display,
-  onSaved,
+  submitLabel,
+  onSubmit,
   onCancel,
   onSpellingChange,
 }: WordBuilderProps) {
@@ -45,7 +61,13 @@ export function WordBuilder({
   const sounds = draft.map((sound, index) => overrides[index] ?? sound.phoneme);
 
   const unresolved = sounds.some((phoneme) => phoneme === null);
-  const ready = sounds.length === wordLength && !unresolved && spelling.trim().length > 0;
+  const meetsRequirement =
+    requirement.kind === "length"
+      ? sounds.length === requirement.wordLength
+      : sounds.length > 0 &&
+        sounds.length <= requirement.maxSounds &&
+        sounds.some((phoneme) => phoneme?.ipa === requirement.phoneme.ipa);
+  const ready = meetsRequirement && !unresolved && spelling.trim().length > 0;
 
   function retype(next: string) {
     setSpelling(next);
@@ -62,15 +84,12 @@ export function WordBuilder({
   function save() {
     setError(undefined);
     startTransition(async () => {
-      const result = await saveWord({
-        english: spelling,
-        phonemes: sounds.map((phoneme) => phoneme!.ipa),
-        wordListId,
-        expectedLength: wordLength,
-      });
-
-      if (result.ok) onSaved(result.english);
-      else setError(result.message);
+      setError(
+        await onSubmit({
+          english: spelling,
+          phonemes: sounds.map((phoneme) => phoneme!.ipa),
+        }),
+      );
     });
   }
 
@@ -81,7 +100,11 @@ export function WordBuilder({
         value={spelling}
         disabled={isPending}
         onChange={(event) => retype(event.target.value)}
-        placeholder={`Type a ${wordLength}-sound word`}
+        placeholder={
+          requirement.kind === "length"
+            ? `Type a ${requirement.wordLength}-sound word`
+            : `Type a word with ${requirement.phoneme.ipa} in it`
+        }
         className="h-9 rounded-lg border border-border bg-surface-muted px-2.5 text-sm text-foreground outline-none placeholder:text-muted focus-visible:border-primary"
       />
 
@@ -129,9 +152,9 @@ export function WordBuilder({
           >
             {unresolved
               ? "Tap the ? to choose that sound."
-              : sounds.length === wordLength
-                ? `${sounds.length} of ${wordLength} sounds — ready.`
-                : `${sounds.length} ${sounds.length === 1 ? "sound" : "sounds"} — this difficulty needs ${wordLength}.`}
+              : ready
+                ? `${sounds.length} ${sounds.length === 1 ? "sound" : "sounds"} — ready.`
+                : hint(requirement, sounds.length)}
           </p>
         </>
       ) : null}
@@ -176,7 +199,7 @@ export function WordBuilder({
           disabled={!ready || isPending}
           className="h-9 flex-1 rounded-lg bg-primary text-sm font-bold text-on-primary transition-colors hover:bg-primary-hover disabled:cursor-not-allowed disabled:opacity-40"
         >
-          {isPending ? "Saving…" : "Use word"}
+          {isPending ? "Saving…" : submitLabel}
         </button>
       </div>
     </div>

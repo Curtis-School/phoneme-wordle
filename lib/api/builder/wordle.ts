@@ -1,31 +1,10 @@
 import "server-only";
 
-import type { Difficulty, Phoneme, WordleConfig, WordSearchConfig } from "@/lib/types";
+import type { Difficulty, Phoneme, WordleConfig } from "@/lib/types";
 import { guessesFor } from "@/lib/wordle";
-import {
-  ApiClientError,
-  generateActivity,
-  getActivities,
-  getPhonemes,
-  listWords,
-} from "./client";
-import type {
-  ActivitySummary,
-  ActivityType,
-  GenerateResponse,
-  WordleGenerateResponse,
-  WordSearchGenerateResponse,
-} from "./types";
-
-function isWordleResponse(response: GenerateResponse): response is WordleGenerateResponse {
-  return response.activity.type === "wordle";
-}
-
-function isWordSearchResponse(
-  response: GenerateResponse,
-): response is WordSearchGenerateResponse {
-  return response.activity.type === "word_search";
-}
+import { ApiClientError, generateActivity, getActivities, getPhonemes, listWords } from "../client";
+import type { ActivitySummary, GenerateResponse, WordleGenerateResponse } from "../types";
+import { describe, empty, first, type Loaded } from "./shared";
 
 const DIFFICULTIES: readonly Difficulty[] = ["easy", "medium", "hard"];
 
@@ -33,12 +12,18 @@ export type WordleActivity = Extract<ActivitySummary, { type: "wordle" }>;
 
 export type WordleParams = { activity?: number; difficulty?: Difficulty; word?: string };
 
+export type LoadedWordle = {
+  activities: ActivitySummary[];
+  inventory: Phoneme[];
+  config: WordleConfig;
+  wordId: number;
+  tiers: WordleActivity[];
+  summary: WordleActivity;
+  wordError?: string;
+};
+
 export function parseWordParam(value: string | string[] | undefined): string | undefined {
   return first(value)?.trim() || undefined;
-}
-
-function first(value: string | string[] | undefined): string | undefined {
-  return Array.isArray(value) ? value[0] : value;
 }
 
 export function parseActivityParam(value: string | string[] | undefined): number | undefined {
@@ -56,73 +41,12 @@ export function parseDifficultyParam(
   return DIFFICULTIES.find((difficulty) => difficulty === raw);
 }
 
+function isWordleResponse(response: GenerateResponse): response is WordleGenerateResponse {
+  return response.activity.type === "wordle";
+}
+
 function isWordleActivity(activity: ActivitySummary): activity is WordleActivity {
   return activity.type === "wordle";
-}
-
-type LoadedBase = {
-  activities: ActivitySummary[];
-  inventory: Phoneme[];
-};
-
-export type LoadedWordle = LoadedBase & {
-  config: WordleConfig;
-  wordId: number;
-  tiers: WordleActivity[];
-  summary: WordleActivity;
-  wordError?: string;
-};
-export type LoadedWordSearch = LoadedBase & { config: WordSearchConfig; seed: number };
-
-export type Loaded<T> =
-  | { ok: true; data: T }
-  | { ok: false; title: string; message: string; hint?: string };
-
-function describe(error: unknown, type: ActivityType): Loaded<never> {
-  const label = type === "wordle" ? "Wordle" : "word search";
-
-  if (error instanceof ApiClientError) {
-    if (error.isUnreachable) {
-      return {
-        ok: false,
-        title: "The activity API is not responding",
-        message: error.message,
-        hint: "Start it with `npm run dev` (or `docker compose up`) in phoneme-api, then reload this page.",
-      };
-    }
-
-    if (error.code === "NOT_FOUND") {
-      return {
-        ok: false,
-        title: "That activity no longer exists",
-        message: error.message,
-        hint: `Remove the ?activity= parameter to fall back to the first saved ${label}.`,
-      };
-    }
-
-    if (error.code === "UNSATISFIABLE") {
-      return {
-        ok: false,
-        title: "This activity cannot be generated",
-        message: error.message,
-        hint: "Its word list has changed since the activity was saved. Edit the list, or pick another activity.",
-      };
-    }
-
-    return { ok: false, title: "The API rejected the request", message: error.message };
-  }
-
-  return {
-    ok: false,
-    title: "Something went wrong",
-    message: `The ${label} could not be loaded.`,
-  };
-}
-
-function select(activities: ActivitySummary[], requested: number | undefined): number | undefined {
-  if (requested !== undefined) return requested;
-
-  return activities[0]?.id;
 }
 
 function sounds(count: number): string {
@@ -172,17 +96,6 @@ function noTier(difficulty: Difficulty, tiers: WordleActivity[]): Loaded<never> 
     hint: tiers.length
       ? `Available: ${tiers.map((tier) => tier.difficulty).join(", ")}.`
       : "Seed the database with `npm run db:seed` in phoneme-api.",
-  };
-}
-
-function empty(type: ActivityType): Loaded<never> {
-  const label = type === "wordle" ? "Wordle" : "word search";
-
-  return {
-    ok: false,
-    title: `No ${label} activities are saved`,
-    message: `The API has no ${label} configuration to generate from.`,
-    hint: "Seed the database with `npm run db:seed` in phoneme-api, or create an activity there.",
   };
 }
 
@@ -256,31 +169,5 @@ export async function loadWordle(params: WordleParams = {}): Promise<Loaded<Load
     };
   } catch (error) {
     return describe(error, "wordle");
-  }
-}
-
-export async function loadWordSearch(requested?: number): Promise<Loaded<LoadedWordSearch>> {
-  try {
-    const activities = await getActivities("word_search");
-    const id = select(activities, requested);
-
-    if (id === undefined) return empty("word_search");
-
-    const [generated, inventory] = await Promise.all([generateActivity(id), getPhonemes()]);
-
-    if (!isWordSearchResponse(generated)) {
-      return {
-        ok: false,
-        title: "That activity is not a word search",
-        message: `"${generated.activity.name}" is a Wordle.`,
-        hint: "Open it from the Wordle page instead.",
-      };
-    }
-
-    const { config, seed } = generated;
-
-    return { ok: true, data: { activities, config, seed, inventory } };
-  } catch (error) {
-    return describe(error, "word_search");
   }
 }

@@ -23,17 +23,18 @@ export type ApiWord = {
   updatedAt: string;
 };
 
-export type ApiWordListDetail = {
+export type ApiWordListSummary = {
   id: number;
   name: string;
   description: string | null;
   targetPhoneme: ApiPhoneme | null;
   wordCount: number;
   activityCount: number;
-  words: ApiWord[];
   createdAt: string;
   updatedAt: string;
 };
+
+export type ApiWordListDetail = ApiWordListSummary & { words: ApiWord[] };
 
 type ActivityBase = {
   id: number;

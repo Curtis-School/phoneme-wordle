@@ -61,6 +61,12 @@ export function isSolved(states: readonly GuessState[]): boolean {
 
 const GUESSES: Record<Difficulty, number> = { easy: 4, medium: 5, hard: 6 };
 
+/**
+ * The hard tier's word length, and so the longest word any saved word can have. Words are
+ * created through one endpoint shared with the word search, so this bounds both games.
+ */
+export const MAX_WORD_SOUNDS = 5;
+
 export function guessesFor(difficulty: Difficulty): number {
   return GUESSES[difficulty];
 }

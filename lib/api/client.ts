@@ -9,6 +9,7 @@ import type {
   ApiPhoneme,
   ApiWord,
   ApiWordListDetail,
+  ApiWordListSummary,
   CreateWordleActivityInput,
   GenerateResponse,
 } from "./types";
@@ -154,6 +155,13 @@ export async function createWord(input: {
 /** Deletes a word outright — it cascades out of every word list that held it. */
 export async function deleteWord(id: number): Promise<void> {
   await request<void>(`/api/words/${id}`, { method: "DELETE" });
+}
+
+/** Summaries only — `wordCount` without the words. `phoneme` is an IPA symbol. */
+export async function listWordLists(
+  params: { search?: string; phoneme?: string } = {},
+): Promise<ApiWordListSummary[]> {
+  return request<ApiWordListSummary[]>("/api/word-lists", { query: params });
 }
 
 export async function getWordList(id: number): Promise<ApiWordListDetail> {

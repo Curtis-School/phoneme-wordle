@@ -14,7 +14,7 @@ import {
   parseActivityParam,
   parseDifficultyParam,
   parseWordParam,
-} from "@/lib/api/builder";
+} from "@/lib/api/builder/wordle";
 import { buildKeyboard } from "@/lib/wordle";
 import { getActivitySettings } from "@/lib/settings-cookie";
 

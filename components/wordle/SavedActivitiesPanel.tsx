@@ -21,7 +21,7 @@ import {
   type SavedWordlePreview,
 } from "@/lib/activity-actions";
 import type { ActivitySettings, Difficulty } from "@/lib/types";
-import type { WordleActivity } from "@/lib/api/builder";
+import type { WordleActivity } from "@/lib/api/builder/wordle";
 
 type SavedActivitiesPanelProps = {
   summary: WordleActivity;

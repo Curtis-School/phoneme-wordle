@@ -1,28 +1,23 @@
 "use client";
 
-import { useEffect, useRef, useState, useTransition } from "react";
-import { useRouter } from "next/navigation";
+import { useTransition } from "react";
 import { PhonemeStrip, PhonemeTile } from "@/components/phoneme/PhonemeTile";
-import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
+import { SavedActivitiesDialog } from "@/components/ui/SavedActivitiesDialog";
+import { ToastMessage, useToast } from "@/components/ui/Toast";
 import { buildWordleHtml } from "@/lib/html-export/wordle-template";
 import { downloadHtml } from "@/lib/html-export/download";
-import {
-  CloseIcon,
-  DownloadIcon,
-  ListIcon,
-  MoonIcon,
-  SaveIcon,
-  SunIcon,
-  TrashIcon,
-} from "@/lib/icons";
+import { SaveIcon } from "@/lib/icons";
 import {
   deleteWordleActivity,
   getSavedWordleActivities,
   saveWordleConfiguration,
   type SavedWordlePreview,
 } from "@/lib/activity-actions";
-import type { ActivitySettings, Difficulty } from "@/lib/types";
+import type { ActivitySettings } from "@/lib/types";
 import type { WordleActivity } from "@/lib/api/builder/wordle";
+
+const TRIGGER_CLASS =
+  "flex h-9 w-full items-center justify-center gap-2 whitespace-nowrap rounded-lg border border-border bg-surface px-3.5 text-sm font-semibold text-foreground transition-colors hover:bg-surface-muted";
 
 type SavedActivitiesPanelProps = {
   summary: WordleActivity;
@@ -31,31 +26,63 @@ type SavedActivitiesPanelProps = {
   settings: ActivitySettings;
 };
 
-export function SavedActivitiesPanel({
-  summary,
-  wordId,
-  englishWord,
-  settings,
-}: SavedActivitiesPanelProps) {
+export function SavedActivitiesPanel(props: SavedActivitiesPanelProps) {
   return (
     <div className="mb-3 flex flex-col gap-2">
-      <SaveButton summary={summary} wordId={wordId} englishWord={englishWord} settings={settings} />
-      <ViewDialog openId={summary.id} />
+      <SaveButton {...props} />
+      <SavedActivitiesDialog<SavedWordlePreview>
+        title="Saved Wordle activities"
+        triggerClassName={TRIGGER_CLASS}
+        width="xl"
+        openId={props.summary.id}
+        load={async () => {
+          const result = await getSavedWordleActivities();
+
+          return result.ok ? { ok: true, items: result.data } : result;
+        }}
+        remove={(item) => deleteWordleActivity(item.id)}
+        download={(item) => {
+          if (!item.pinned) return;
+
+          downloadHtml(
+            `phoneme-wordle-${item.pinned.config.englishWord}.html`,
+            buildWordleHtml(item.pinned.config, item.pinned.keys, item.settings),
+          );
+        }}
+        downloadBlocked={(item) =>
+          item.pinned
+            ? undefined
+            : "No word is pinned — open it to draw one, then export."
+        }
+        href={(item) => `/wordle?activity=${item.id}`}
+        summary={(item) => (
+          <>
+            <span className="shrink-0 text-sm font-semibold text-foreground">
+              {item.pinned ? item.pinned.config.englishWord : item.name}
+            </span>
+            {item.pinned ? (
+              <PhonemeStrip nowrap>
+                {item.pinned.config.word.map((phoneme, index) => (
+                  <PhonemeTile key={index} label={phoneme.ipa} size="sm" />
+                ))}
+              </PhonemeStrip>
+            ) : (
+              // No pinned word means there is nothing fixed to show: this activity draws a
+              // fresh word of the right length each time it is opened.
+              <span className="shrink-0 text-xs text-muted">
+                Any {item.wordLength}-sound word
+              </span>
+            )}
+          </>
+        )}
+      />
     </div>
   );
 }
 
 function SaveButton({ summary, wordId, englishWord, settings }: SavedActivitiesPanelProps) {
   const [isPending, startTransition] = useTransition();
-  const [toast, setToast] = useState<{ tone: "success" | "error"; message: string }>();
-
-  useEffect(() => {
-    if (!toast) return;
-
-    const timer = setTimeout(() => setToast(undefined), 3000);
-
-    return () => clearTimeout(timer);
-  }, [toast]);
+  const { toast, show } = useToast();
 
   function save() {
     startTransition(async () => {
@@ -69,9 +96,9 @@ function SaveButton({ summary, wordId, englishWord, settings }: SavedActivitiesP
       });
 
       if (result.ok) {
-        setToast({ tone: "success", message: `Saved “${englishWord}” to your activities.` });
+        show("success", `Saved “${englishWord}” to your activities.`);
       } else {
-        setToast({ tone: "error", message: result.message });
+        show("error", result.message);
       }
     });
   }
@@ -89,198 +116,7 @@ function SaveButton({ summary, wordId, englishWord, settings }: SavedActivitiesP
         {isPending ? "Saving…" : "Save configuration"}
       </button>
 
-      {toast ? (
-        <div
-          role="status"
-          className={`fixed bottom-5 right-5 z-50 rounded-xl border px-4 py-3 text-sm font-semibold shadow-lg ${
-            toast.tone === "success"
-              ? "border-correct bg-correct text-correct-foreground"
-              : "border-present bg-present text-present-foreground"
-          }`}
-        >
-          {toast.message}
-        </div>
-      ) : null}
+      <ToastMessage toast={toast} />
     </>
   );
 }
-
-const DIFFICULTY_ACCENT: Record<Difficulty, string> = {
-  easy: "border-l-correct",
-  medium: "border-l-present",
-  hard: "border-l-absent",
-};
-
-const DIFFICULTY_LOZENGE: Record<Difficulty, string> = {
-  easy: "bg-correct/10 text-correct",
-  medium: "bg-present/10 text-present",
-  hard: "bg-absent/10 text-absent",
-};
-
-function ViewDialog({ openId }: { openId: number }) {
-  const router = useRouter();
-  const dialogRef = useRef<HTMLDialogElement>(null);
-  const [status, setStatus] = useState<"idle" | "loading" | "ok" | "error">("idle");
-  const [data, setData] = useState<SavedWordlePreview[]>([]);
-  const [error, setError] = useState<string>();
-  const [deleteError, setDeleteError] = useState<string>();
-  const [pendingDelete, setPendingDelete] = useState<SavedWordlePreview | null>(null);
-  const [, startTransition] = useTransition();
-
-  function openDialog() {
-    dialogRef.current?.showModal();
-    setStatus("loading");
-    setDeleteError(undefined);
-    startTransition(async () => {
-      const result = await getSavedWordleActivities();
-
-      if (result.ok) {
-        setData(result.data);
-        setStatus("ok");
-      } else {
-        setError(result.message);
-        setStatus("error");
-      }
-    });
-  }
-
-  /** Loads the activity into the page, where its word and difficulty can be changed. */
-  function openActivity(item: SavedWordlePreview) {
-    dialogRef.current?.close();
-    router.push(`/wordle?activity=${item.id}`);
-  }
-
-  function download(item: SavedWordlePreview) {
-    const html = buildWordleHtml(item.config, item.keys, item.settings);
-    downloadHtml(`phoneme-wordle-${item.config.englishWord}.html`, html);
-  }
-
-  function confirmDelete() {
-    const item = pendingDelete;
-    if (!item) return;
-
-    setPendingDelete(null);
-    setDeleteError(undefined);
-    startTransition(async () => {
-      const result = await deleteWordleActivity(item.id);
-
-      if (result.ok) {
-        setData((current) => current.filter((entry) => entry.id !== item.id));
-      } else {
-        setDeleteError(result.message);
-      }
-    });
-  }
-
-  return (
-    <>
-      <button type="button" onClick={openDialog} className={TRIGGER_CLASS}>
-        <ListIcon />
-        Saved activities
-      </button>
-
-      <dialog
-        ref={dialogRef}
-        className="m-auto w-[min(92vw,34rem)] rounded-2xl border border-border bg-surface p-5 text-foreground backdrop:bg-black/50"
-      >
-        <div className="flex items-center justify-between gap-3">
-          <h3 className="text-sm font-semibold text-foreground">Saved Wordle activities</h3>
-          <button
-            type="button"
-            onClick={() => dialogRef.current?.close()}
-            aria-label="Close"
-            className="flex size-8 items-center justify-center rounded-lg text-muted transition-colors hover:bg-surface-muted hover:text-foreground"
-          >
-            <CloseIcon />
-          </button>
-        </div>
-
-        {status === "loading" ? <p className="mt-4 text-sm text-muted">Loading…</p> : null}
-        {status === "error" ? (
-          <p role="alert" className="mt-4 text-sm text-present">
-            {error}
-          </p>
-        ) : null}
-        {status === "ok" && data.length === 0 ? (
-          <p className="mt-4 text-sm text-muted">No saved activities yet.</p>
-        ) : null}
-
-        {deleteError ? (
-          <p role="alert" className="mt-4 text-xs leading-5 text-present">
-            {deleteError}
-          </p>
-        ) : null}
-
-        {status === "ok" && data.length > 0 ? (
-          // Fixed row height (h-14) x 10 rows + gap-2 x 9 gaps between them, so the
-          // scrollbar only appears once an 11th activity is saved.
-          <ul className="mt-4 flex max-h-[39.5rem] flex-col gap-2 overflow-y-auto">
-            {data.map((item) => (
-              <li
-                key={item.id}
-                className={`flex h-14 shrink-0 items-center gap-2 overflow-x-auto rounded-xl border ${item.id === openId ? "border-primary" : "border-border"} ${DIFFICULTY_ACCENT[item.difficulty]} border-l-4 bg-surface-muted px-3`}
-              >
-                <button
-                  type="button"
-                  onClick={() => openActivity(item)}
-                  title={`Open “${item.name}” to play and edit it`}
-                  className="flex min-w-0 flex-1 items-center gap-2 rounded-lg text-left transition-opacity hover:opacity-70"
-                >
-                  <span className="shrink-0 text-sm font-semibold text-foreground">
-                    {item.config.englishWord}
-                  </span>
-                  <PhonemeStrip nowrap>
-                    {item.config.word.map((phoneme, index) => (
-                      <PhonemeTile key={index} label={phoneme.ipa} size="sm" />
-                    ))}
-                  </PhonemeStrip>
-                  <span
-                    className={`ml-auto shrink-0 rounded-full px-2.5 py-1 text-xs font-semibold capitalize ${DIFFICULTY_LOZENGE[item.difficulty]}`}
-                  >
-                    {item.difficulty}
-                  </span>
-                </button>
-                <span
-                  title={item.settings.theme === "dark" ? "Dark theme" : "Light theme"}
-                  className="flex shrink-0 items-center justify-center text-muted"
-                >
-                  {item.settings.theme === "dark" ? <MoonIcon /> : <SunIcon />}
-                </span>
-                <button
-                  type="button"
-                  onClick={() => download(item)}
-                  aria-label={`Download ${item.name}`}
-                  title="Download playable .html"
-                  className="flex size-9 shrink-0 items-center justify-center rounded-lg border border-border text-muted transition-colors hover:border-primary hover:text-foreground"
-                >
-                  <DownloadIcon />
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setPendingDelete(item)}
-                  aria-label={`Delete ${item.name}`}
-                  title="Delete this activity"
-                  className="flex size-9 shrink-0 items-center justify-center rounded-lg border border-border text-muted transition-colors hover:border-present hover:text-present"
-                >
-                  <TrashIcon />
-                </button>
-              </li>
-            ))}
-          </ul>
-        ) : null}
-      </dialog>
-
-      <ConfirmDialog
-        open={pendingDelete !== null}
-        title="Delete activity"
-        message={`Delete “${pendingDelete?.name}”? This can’t be undone.`}
-        onConfirm={confirmDelete}
-        onCancel={() => setPendingDelete(null)}
-      />
-    </>
-  );
-}
-
-const TRIGGER_CLASS =
-  "flex h-9 w-full items-center justify-center gap-2 whitespace-nowrap rounded-lg border border-border bg-surface px-3.5 text-sm font-semibold text-foreground transition-colors hover:bg-surface-muted";
-

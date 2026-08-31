@@ -1,8 +1,9 @@
 "use client";
 
-import { useEffect, useRef, useState, useTransition } from "react";
-import { CloseIcon } from "@/lib/icons";
+import { useState, useTransition } from "react";
+import { Modal } from "@/components/ui/Modal";
 import { saveWordSearchActivity } from "@/lib/word-search-actions";
+import { ERROR_TEXT, PRIMARY_BUTTON, SECONDARY_BUTTON, TEXT_INPUT } from "@/lib/ui";
 import type { ActivitySettings, Phoneme, PhonemeWord } from "@/lib/types";
 
 type Mode = "update" | "overwrite" | "new";
@@ -39,7 +40,6 @@ export function SaveActivityDialog({
   onClose,
   onSaved,
 }: SaveActivityDialogProps) {
-  const dialogRef = useRef<HTMLDialogElement>(null);
   const editing = activityId !== null;
   const [name, setName] = useState(activityName ?? "");
   // "update" edits the open activity; "overwrite" rewrites the current list under a new
@@ -66,14 +66,6 @@ export function SaveActivityDialog({
     return `${effect}, and changes ${alsoUsedBy === 1 ? "the other activity" : `the ${alsoUsedBy} other activities`} built on the same words`;
   }
 
-  useEffect(() => {
-    const dialog = dialogRef.current;
-    if (!dialog) return;
-
-    if (open && !dialog.open) dialog.showModal();
-    if (!open && dialog.open) dialog.close();
-  }, [open]);
-
   function save() {
     setError(undefined);
     startTransition(async () => {
@@ -99,25 +91,11 @@ export function SaveActivityDialog({
   }
 
   return (
-    <dialog
-      ref={dialogRef}
+    <Modal
+      open={open}
+      title={editing ? "Edit word search activity" : "Save word search activity"}
       onClose={onClose}
-      className="m-auto w-[min(92vw,26rem)] rounded-2xl border border-border bg-surface p-5 text-foreground backdrop:bg-black/50"
     >
-      <div className="flex items-center justify-between gap-3">
-        <h3 className="text-sm font-semibold text-foreground">
-          {editing ? "Edit word search activity" : "Save word search activity"}
-        </h3>
-        <button
-          type="button"
-          onClick={onClose}
-          aria-label="Close"
-          className="flex size-8 items-center justify-center rounded-lg text-muted transition-colors hover:bg-surface-muted hover:text-foreground"
-        >
-          <CloseIcon />
-        </button>
-      </div>
-
       <p className="mt-3 text-xs leading-5 text-muted">
         {words.length} {words.length === 1 ? "word" : "words"} on {phoneme.label} {phoneme.ipa}.
       </p>
@@ -127,7 +105,7 @@ export function SaveActivityDialog({
         disabled={isPending}
         onChange={(event) => setName(event.target.value)}
         placeholder="Activity name, e.g. Week 3 sound hunt"
-        className="mt-3 h-9 w-full rounded-lg border border-border bg-surface-muted px-2.5 text-sm text-foreground outline-none placeholder:text-muted focus-visible:border-primary"
+        className={`mt-3 ${TEXT_INPUT}`}
       />
 
       {editing ? (
@@ -192,7 +170,7 @@ export function SaveActivityDialog({
       )}
 
       {error ? (
-        <p role="alert" className="mt-3 text-xs leading-5 text-present">
+        <p role="alert" className={`mt-3 ${ERROR_TEXT}`}>
           {error}
         </p>
       ) : null}
@@ -202,7 +180,7 @@ export function SaveActivityDialog({
           type="button"
           onClick={onClose}
           disabled={isPending}
-          className="h-9 flex-1 rounded-lg border border-border text-sm font-semibold text-foreground transition-colors hover:bg-surface-muted disabled:opacity-60"
+          className={SECONDARY_BUTTON}
         >
           Cancel
         </button>
@@ -210,7 +188,7 @@ export function SaveActivityDialog({
           type="button"
           onClick={save}
           disabled={isPending || !name.trim() || words.length === 0}
-          className="h-9 flex-1 rounded-lg bg-primary text-sm font-bold text-on-primary transition-colors hover:bg-primary-hover disabled:cursor-not-allowed disabled:opacity-40"
+          className={PRIMARY_BUTTON}
         >
           {isPending
             ? "Saving…"
@@ -219,6 +197,6 @@ export function SaveActivityDialog({
               : "Save activity"}
         </button>
       </div>
-    </dialog>
+    </Modal>
   );
 }

@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useTransition } from "react";
 import { ReloadIcon } from "@/lib/icons";
+import { ROW_ICON_BUTTON } from "@/lib/ui";
 import type { SoundOption } from "@/lib/api/builder/word-search";
 
 type TargetSoundControlsProps = {
@@ -37,7 +38,7 @@ export function TargetSoundControls({ current, options }: TargetSoundControlsPro
       disabled={isPending}
       aria-label="Try a different sound"
       title="Try a different sound"
-      className="flex size-9 shrink-0 items-center justify-center rounded-lg border border-border text-muted transition-colors hover:border-primary hover:text-foreground disabled:opacity-50"
+      className={`${ROW_ICON_BUTTON} disabled:opacity-50`}
     >
       <ReloadIcon />
     </button>

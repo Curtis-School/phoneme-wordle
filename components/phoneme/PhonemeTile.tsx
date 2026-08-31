@@ -36,6 +36,38 @@ const SIZE_CLASSES: Record<PhonemeSize, string> = {
   lg: "size-14 text-lg",
 };
 
+/** The hover swap both tiles and keys use: one symbol at rest, the other on hover. */
+export function FlipFace({
+  ipa,
+  english,
+  display,
+}: {
+  ipa?: string;
+  english: string;
+  display: SymbolDisplay;
+}) {
+  const englishDefault = display === "english";
+
+  return (
+    <>
+      <span
+        className={`tracking-tight transition-opacity group-hover:opacity-0 ${
+          englishDefault ? "uppercase" : ""
+        }`}
+      >
+        {englishDefault ? english : ipa}
+      </span>
+      <span
+        className={`absolute inset-0 flex items-center justify-center opacity-0 transition-opacity group-hover:opacity-100 ${
+          englishDefault ? "" : "uppercase"
+        }`}
+      >
+        {englishDefault ? ipa : english}
+      </span>
+    </>
+  );
+}
+
 export function PhonemeTile({
   label,
   reveal,
@@ -59,26 +91,9 @@ export function PhonemeTile({
       );
     }
 
-    const englishDefault = display === "english";
-    const front = englishDefault ? reveal : label;
-    const back = englishDefault ? label : reveal;
-
     return (
       <div title={title} className={`group relative ${base}`}>
-        <span
-          className={`tracking-tight transition-opacity group-hover:opacity-0 ${
-            englishDefault ? "uppercase" : ""
-          }`}
-        >
-          {front}
-        </span>
-        <span
-          className={`absolute inset-0 flex items-center justify-center opacity-0 transition-opacity group-hover:opacity-100 ${
-            englishDefault ? "" : "uppercase"
-          }`}
-        >
-          {back}
-        </span>
+        <FlipFace ipa={label} english={reveal} display={display} />
       </div>
     );
   }

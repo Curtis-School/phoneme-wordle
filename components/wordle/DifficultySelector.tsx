@@ -1,9 +1,8 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+import { DIFFICULTIES } from "@/lib/difficulty";
 import type { Difficulty } from "@/lib/types";
-
-const DIFFICULTIES: readonly Difficulty[] = ["easy", "medium", "hard"];
 
 type DifficultySelectorProps = {
   currentDifficulty: Difficulty;

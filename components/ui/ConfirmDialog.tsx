@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { Modal } from "./Modal";
+import { DANGER_BUTTON, SECONDARY_BUTTON } from "@/lib/ui";
 
 type ConfirmDialogProps = {
   open: boolean;
@@ -21,41 +22,18 @@ export function ConfirmDialog({
   onConfirm,
   onCancel,
 }: ConfirmDialogProps) {
-  const dialogRef = useRef<HTMLDialogElement>(null);
-
-  useEffect(() => {
-    const dialog = dialogRef.current;
-    if (!dialog) return;
-
-    if (open && !dialog.open) dialog.showModal();
-    if (!open && dialog.open) dialog.close();
-  }, [open]);
-
   return (
-    <dialog
-      ref={dialogRef}
-      onCancel={onCancel}
-      className="m-auto w-[min(92vw,24rem)] rounded-2xl border border-border bg-surface p-5 text-foreground backdrop:bg-black/50"
-    >
-      <h3 className="text-sm font-semibold text-foreground">{title}</h3>
+    <Modal open={open} title={title} width="sm" closeButton={false} onClose={onCancel}>
       <p className="mt-2 text-sm leading-5 text-muted">{message}</p>
 
       <div className="mt-4 flex gap-1.5">
-        <button
-          type="button"
-          onClick={onCancel}
-          className="h-9 flex-1 rounded-lg border border-border text-sm font-semibold text-foreground transition-colors hover:bg-surface-muted"
-        >
+        <button type="button" onClick={onCancel} className={SECONDARY_BUTTON}>
           {cancelLabel}
         </button>
-        <button
-          type="button"
-          onClick={onConfirm}
-          className="h-9 flex-1 rounded-lg bg-present text-sm font-bold text-present-foreground transition-colors hover:opacity-90"
-        >
+        <button type="button" onClick={onConfirm} className={DANGER_BUTTON}>
           {confirmLabel}
         </button>
       </div>
-    </dialog>
+    </Modal>
   );
 }

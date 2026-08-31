@@ -119,7 +119,10 @@ export async function getActivities(type?: ActivityType): Promise<ActivitySummar
   return request<ActivitySummary[]>("/api/activities", { query: { type } });
 }
 
-/** Saves a new configuration. Duplicate `name` is a 409 — it is unique per type. */
+/**
+ * Saves a new configuration. Names are not unique but configurations are: a set of
+ * settings already stored under any name is a 409, whatever this one is called.
+ */
 export async function createActivity(
   input: CreateActivityInput,
 ): Promise<ActivitySummary> {
@@ -168,7 +171,10 @@ export async function createWord(input: {
   return request<ApiWord>("/api/words", { method: "POST", body: input });
 }
 
-/** Deletes a word outright — it cascades out of every word list that held it. */
+/**
+ * Deletes a word outright — it cascades out of every word list that held it, and any
+ * Wordle activity that pinned it as its target falls back to drawing a random word.
+ */
 export async function deleteWord(id: number): Promise<void> {
   await request<void>(`/api/words/${id}`, { method: "DELETE" });
 }
@@ -203,4 +209,9 @@ export async function setWordListWords(
     method: "PATCH",
     body: { words },
   });
+}
+
+/** Deletes a word list. `409 IN_USE` while an activity still points at it. */
+export async function deleteWordList(id: number): Promise<void> {
+  await request<void>(`/api/word-lists/${id}`, { method: "DELETE" });
 }

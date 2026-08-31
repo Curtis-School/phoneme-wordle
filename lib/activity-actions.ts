@@ -2,16 +2,23 @@
 
 import { revalidatePath } from "next/cache";
 import {
-  ApiClientError,
   createActivity,
   deleteActivity,
   getActivities,
   getPhonemes,
 } from "@/lib/api/client";
+import { actionError } from "@/lib/action-result";
 import { buildKeyboard, guessesFor } from "@/lib/wordle";
-import type { ActivitySettings, Difficulty, Phoneme, WordleConfig } from "@/lib/types";
+import type {
+  ActionError,
+  ActionResult,
+  ActivitySettings,
+  Difficulty,
+  Phoneme,
+  WordleConfig,
+} from "@/lib/types";
 
-export type SaveConfigurationInput = {
+type SaveConfigurationInput = {
   englishWord: string;
   difficulty: Difficulty;
   wordListId: number;
@@ -20,11 +27,9 @@ export type SaveConfigurationInput = {
   settings: ActivitySettings;
 };
 
-export type SaveConfigurationResult = { ok: true } | { ok: false; message: string };
-
 export async function saveWordleConfiguration(
   input: SaveConfigurationInput,
-): Promise<SaveConfigurationResult> {
+): Promise<ActionResult> {
   try {
     await createActivity({
       type: "wordle",
@@ -39,11 +44,7 @@ export async function saveWordleConfiguration(
       theme: input.settings.theme,
     });
   } catch (error) {
-    return {
-      ok: false,
-      message:
-        error instanceof ApiClientError ? error.message : "Could not save the activity.",
-    };
+    return actionError(error, "Could not save the activity.");
   }
 
   revalidatePath("/wordle");
@@ -55,16 +56,19 @@ export type SavedWordlePreview = {
   id: number;
   name: string;
   difficulty: Difficulty;
-  config: WordleConfig;
-  keys: Phoneme[];
+  wordLength: number;
+  /**
+   * Null when the activity has no word pinned — either it was saved as a tier that draws a
+   * fresh word every time, or the word it pinned has since been deleted. Either way there
+   * is no fixed puzzle to preview or export until it is opened.
+   */
+  pinned: { config: WordleConfig; keys: Phoneme[] } | null;
   settings: ActivitySettings;
 };
 
-export type SavedWordleActivitiesResult =
-  | { ok: true; data: SavedWordlePreview[] }
-  | { ok: false; message: string };
-
-export async function getSavedWordleActivities(): Promise<SavedWordleActivitiesResult> {
+export async function getSavedWordleActivities(): Promise<
+  { ok: true; data: SavedWordlePreview[] } | ActionError
+> {
   try {
     const [activities, inventory] = await Promise.all([
       getActivities("wordle"),
@@ -74,9 +78,9 @@ export async function getSavedWordleActivities(): Promise<SavedWordleActivitiesR
     const previews: SavedWordlePreview[] = [];
 
     for (const activity of activities) {
-      if (activity.type !== "wordle" || !activity.word) continue;
+      if (activity.type !== "wordle") continue;
 
-      const config: WordleConfig = {
+      const config: WordleConfig | null = activity.word && {
         englishWord: activity.word.english,
         word: activity.word.phonemes,
         maxGuesses: guessesFor(activity.difficulty),
@@ -87,8 +91,8 @@ export async function getSavedWordleActivities(): Promise<SavedWordleActivitiesR
         id: activity.id,
         name: activity.name,
         difficulty: activity.difficulty,
-        config,
-        keys: buildKeyboard(config.word, inventory),
+        wordLength: activity.wordLength,
+        pinned: config && { config, keys: buildKeyboard(config.word, inventory) },
         settings: {
           symbolDisplay: activity.symbolDisplay,
           showTooltips: activity.showTooltips,
@@ -99,25 +103,15 @@ export async function getSavedWordleActivities(): Promise<SavedWordleActivitiesR
 
     return { ok: true, data: previews };
   } catch (error) {
-    return {
-      ok: false,
-      message:
-        error instanceof ApiClientError ? error.message : "Could not load saved activities.",
-    };
+    return actionError(error, "Could not load saved activities.");
   }
 }
 
-export type DeleteActivityResult = { ok: true } | { ok: false; message: string };
-
-export async function deleteWordleActivity(id: number): Promise<DeleteActivityResult> {
+export async function deleteWordleActivity(id: number): Promise<ActionResult> {
   try {
     await deleteActivity(id);
   } catch (error) {
-    return {
-      ok: false,
-      message:
-        error instanceof ApiClientError ? error.message : "Could not delete the activity.",
-    };
+    return actionError(error, "Could not delete the activity.");
   }
 
   revalidatePath("/wordle");

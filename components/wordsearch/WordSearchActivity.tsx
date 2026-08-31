@@ -6,6 +6,7 @@ import { generateWordSearch, MAX_WORD_SEARCH_WORDS } from "@/lib/wordsearch";
 import { MAX_WORD_SOUNDS } from "@/lib/wordle";
 import { addWordSearchWord } from "@/lib/word-search-actions";
 import { WordBuilder } from "@/components/phoneme/WordBuilder";
+import { ToastMessage, useToast } from "@/components/ui/Toast";
 import { WordSearchGame } from "./WordSearchGame";
 import { SaveActivityDialog } from "./SaveActivityDialog";
 import { ExportButton } from "./ExportButton";
@@ -46,7 +47,7 @@ export function WordSearchActivity({
   const [draft, setDraft] = useState<PhonemeWord[]>([...words]);
   const [editing, setEditing] = useState(false);
   const [saving, setSaving] = useState(false);
-  const [toast, setToast] = useState<string>();
+  const { toast, show } = useToast();
 
   const puzzle = useMemo(
     () => generateWordSearch(draft, size, fillers, seed),
@@ -124,19 +125,11 @@ export function WordSearchActivity({
         onSaved={(name) => {
           setSaving(false);
           setEditing(false);
-          setToast(`Saved “${name}” to your activities.`);
-          setTimeout(() => setToast(undefined), 3000);
+          show("success", `Saved “${name}” to your activities.`);
         }}
       />
 
-      {toast ? (
-        <div
-          role="status"
-          className="fixed bottom-5 right-5 z-50 rounded-xl border border-correct bg-correct px-4 py-3 text-sm font-semibold text-correct-foreground shadow-lg"
-        >
-          {toast}
-        </div>
-      ) : null}
+      <ToastMessage toast={toast} />
     </>
   );
 }

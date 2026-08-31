@@ -1,12 +1,11 @@
 import "server-only";
 
 import type { Difficulty, Phoneme, WordleConfig } from "@/lib/types";
+import { DIFFICULTIES } from "@/lib/difficulty";
 import { guessesFor } from "@/lib/wordle";
 import { ApiClientError, generateActivity, getActivities, getPhonemes, listWords } from "../client";
 import type { ActivitySummary, GenerateResponse, WordleGenerateResponse } from "../types";
 import { describe, empty, first, type Loaded } from "./shared";
-
-const DIFFICULTIES: readonly Difficulty[] = ["easy", "medium", "hard"];
 
 export type WordleActivity = Extract<ActivitySummary, { type: "wordle" }>;
 

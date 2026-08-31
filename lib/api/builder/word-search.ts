@@ -1,9 +1,9 @@
 import "server-only";
 
 import type { Phoneme, PhonemeWord } from "@/lib/types";
-import { MAX_WORD_SOUNDS } from "@/lib/wordle";
 import { MAX_WORD_SEARCH_WORDS, WORD_SEARCH_SIZE } from "@/lib/wordsearch";
 import { getActivity, getPhonemes, getWordList, listWordLists, toPhoneme } from "../client";
+import { playableWords } from "../words";
 import type { ActivitySummary, ApiWordListSummary } from "../types";
 import { describe, first, type Loaded } from "./shared";
 
@@ -81,17 +81,11 @@ type ListContents = {
 async function wordsFrom(listId: number, limit: number): Promise<ListContents> {
   const detail = await getWordList(listId);
 
-  // A longer word than the grid was built for would be dropped on placement, leaving an
-  // unfindable clue, so over-long words never reach the puzzle.
-  const words = detail.words
-    .filter((word) => word.phonemes.length <= MAX_WORD_SOUNDS)
-    .slice(0, limit)
-    .map((word) => ({
-      english: word.english,
-      phonemes: word.phonemes.map(toPhoneme),
-    }));
-
-  return { words, total: detail.wordCount, activityCount: detail.activityCount };
+  return {
+    words: playableWords(detail.words, limit),
+    total: detail.wordCount,
+    activityCount: detail.activityCount,
+  };
 }
 
 /**

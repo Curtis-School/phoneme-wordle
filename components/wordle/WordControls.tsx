@@ -6,6 +6,7 @@ import { WordBuilder } from "@/components/phoneme/WordBuilder";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { deleteWordById, saveWord } from "@/lib/word-actions";
 import { PencilIcon, ReloadIcon, TrashIcon } from "@/lib/icons";
+import { ERROR_TEXT, ICON_BUTTON, ICON_BUTTON_ACTIVE, ICON_BUTTON_DANGER } from "@/lib/ui";
 import type { Difficulty, Phoneme, SymbolDisplay } from "@/lib/types";
 
 type WordControlsProps = {
@@ -78,7 +79,7 @@ export function WordControls({
           disabled={isPending}
           aria-label="Draw a different word"
           title="Draw a different word"
-          className="flex size-8 items-center justify-center rounded-lg border border-border text-muted transition-colors hover:border-primary hover:text-foreground disabled:opacity-50"
+          className={ICON_BUTTON}
         >
           <ReloadIcon />
         </button>
@@ -88,11 +89,7 @@ export function WordControls({
           aria-label="Choose a word"
           aria-expanded={editing}
           title="Choose a word"
-          className={`flex size-8 items-center justify-center rounded-lg border transition-colors ${
-            editing
-              ? "border-primary bg-primary text-on-primary"
-              : "border-border text-muted hover:border-primary hover:text-foreground"
-          }`}
+          className={editing ? ICON_BUTTON_ACTIVE : ICON_BUTTON}
         >
           <PencilIcon />
         </button>
@@ -102,7 +99,7 @@ export function WordControls({
           disabled={isPending}
           aria-label="Delete this word"
           title="Delete this word"
-          className="flex size-8 items-center justify-center rounded-lg border border-border text-muted transition-colors hover:border-present hover:text-present disabled:opacity-50"
+          className={ICON_BUTTON_DANGER}
         >
           <TrashIcon />
         </button>
@@ -134,7 +131,7 @@ export function WordControls({
       ) : null}
 
       {visibleError ? (
-        <p role="alert" className="text-xs leading-5 text-present">
+        <p role="alert" className={ERROR_TEXT}>
           {visibleError} Try another word, or use the reload icon for a random one.
         </p>
       ) : null}

@@ -12,6 +12,7 @@ import {
 import { phonemeHint } from "@/lib/phoneme";
 import { PhonemeTile } from "@/components/phoneme/PhonemeTile";
 import { WordSearchClues, type WordSearchEdit } from "./WordSearchClues";
+import { ACTION_BUTTON } from "@/lib/ui";
 
 type WordSearchGameProps = {
   puzzle: GeneratedWordSearch;
@@ -20,9 +21,6 @@ type WordSearchGameProps = {
   onCycle?: () => void;
   edit?: WordSearchEdit;
 };
-
-const ACTION_BUTTON =
-  "inline-flex h-9 items-center gap-2 whitespace-nowrap rounded-lg border border-border bg-surface px-3.5 text-sm font-semibold text-foreground transition-colors hover:bg-surface-muted";
 
 const key = (cell: Cell) => `${cell.row},${cell.col}`;
 

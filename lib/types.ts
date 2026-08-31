@@ -34,3 +34,7 @@ export type WordSearchConfig = {
   words: PhonemeWord[];
   size: number;
 };
+
+export type ActionError = { ok: false; message: string };
+
+export type ActionResult = { ok: true } | ActionError;

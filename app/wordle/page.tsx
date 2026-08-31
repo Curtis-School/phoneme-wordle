@@ -6,12 +6,12 @@ import {
 } from "@/components/phoneme/PhonemeTile";
 import { WordleGame } from "@/components/wordle/WordleGame";
 import { ExportButton } from "@/components/wordle/ExportButton";
-import { AnswerKeyHeader } from "@/components/wordle/AnswerKeyHeader";
+import { DifficultySelector } from "@/components/wordle/DifficultySelector";
 import { SavedActivitiesPanel } from "@/components/wordle/SavedActivitiesPanel";
 import { WordControls } from "@/components/wordle/WordControls";
+import { parseActivityParam } from "@/lib/api/builder/shared";
 import {
   loadWordle,
-  parseActivityParam,
   parseDifficultyParam,
   parseWordParam,
 } from "@/lib/api/builder/wordle";
@@ -77,7 +77,10 @@ export default async function WordlePage({ searchParams }: PageProps<"/wordle">)
           </section>
 
           <section className="rounded-2xl border border-border bg-surface p-5">
-            <AnswerKeyHeader currentDifficulty={summary.difficulty} />
+            <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+              <h2 className="text-sm font-semibold text-foreground">Answer key</h2>
+              <DifficultySelector currentDifficulty={summary.difficulty} />
+            </div>
             <SavedActivitiesPanel
               summary={summary}
               wordId={wordId}

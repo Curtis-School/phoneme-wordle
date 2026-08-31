@@ -1,12 +1,11 @@
 import "server-only";
 
 import type { Difficulty, Phoneme, WordleConfig } from "@/lib/types";
+import { DIFFICULTIES } from "@/lib/difficulty";
 import { guessesFor } from "@/lib/wordle";
 import { ApiClientError, generateActivity, getActivities, getPhonemes, listWords } from "../client";
 import type { ActivitySummary, GenerateResponse, WordleGenerateResponse } from "../types";
 import { describe, empty, first, type Loaded } from "./shared";
-
-const DIFFICULTIES: readonly Difficulty[] = ["easy", "medium", "hard"];
 
 export type WordleActivity = Extract<ActivitySummary, { type: "wordle" }>;
 
@@ -24,13 +23,6 @@ export type LoadedWordle = {
 
 export function parseWordParam(value: string | string[] | undefined): string | undefined {
   return first(value)?.trim() || undefined;
-}
-
-export function parseActivityParam(value: string | string[] | undefined): number | undefined {
-  const raw = first(value);
-  const id = Number(raw);
-
-  return raw !== undefined && Number.isInteger(id) && id > 0 ? id : undefined;
 }
 
 export function parseDifficultyParam(

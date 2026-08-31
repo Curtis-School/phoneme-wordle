@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import type { ActivitySettings, Phoneme, WordleConfig } from "@/lib/types";
 import { evaluateGuess, isSolved } from "@/lib/wordle";
 import { phonemeHint } from "@/lib/phoneme";
@@ -56,16 +56,16 @@ export function WordleGame({ config, keys, settings }: WordleGameProps) {
     setCurrent((value) => [...value, ipa]);
   }
 
-  function backspace() {
+  const backspace = useCallback(() => {
     if (done) return;
     setCurrent((value) => value.slice(0, -1));
-  }
+  }, [done]);
 
-  function submit() {
+  const submit = useCallback(() => {
     if (done || current.length !== len) return;
     setGuesses((value) => [...value, current]);
     setCurrent([]);
-  }
+  }, [done, current, len]);
 
   function reset() {
     setGuesses([]);
@@ -79,7 +79,7 @@ export function WordleGame({ config, keys, settings }: WordleGameProps) {
     }
     document.addEventListener("keydown", onKey);
     return () => document.removeEventListener("keydown", onKey);
-  });
+  }, [submit, backspace]);
 
   const currentTiles = current.map((ipa) => ({
     symbol: ipa,

@@ -1,13 +1,15 @@
 import "server-only";
 
 import type { Phoneme, PhonemeWord } from "@/lib/types";
-import { MAX_WORD_SOUNDS } from "@/lib/wordle";
 import { MAX_WORD_SEARCH_WORDS, WORD_SEARCH_SIZE } from "@/lib/wordsearch";
-import { getPhonemes, getWordList, listWordLists, toPhoneme } from "../client";
-import type { ApiWordListSummary } from "../types";
+import { getActivity, getPhonemes, getWordList, listWordLists, toPhoneme } from "../client";
+import { playableWords } from "../words";
+import type { ActivitySummary, ApiWordListSummary } from "../types";
 import { describe, first, type Loaded } from "./shared";
 
-export type WordSearchParams = { phoneme?: string };
+type WordSearchActivity = Extract<ActivitySummary, { type: "word_search" }>;
+
+export type WordSearchParams = { activity?: number; phoneme?: string };
 
 /** One entry per phoneme in the inventory; `wordCount` is 0 when it has no words yet. */
 export type SoundOption = { phoneme: Phoneme; wordCount: number };
@@ -17,10 +19,16 @@ export type LoadedWordSearch = {
   phoneme: Phoneme;
   words: PhonemeWord[];
   wordListId: number | null;
-  wordListName: string | null;
   size: number;
   seed: number;
   options: SoundOption[];
+  /** Everything the list holds, uncapped — what an overwrite would replace. */
+  wordListWordCount: number;
+  /** How many activities draw on that list, so a rewrite can say who else it affects. */
+  wordListActivityCount: number;
+  /** Set when the page was opened from a saved activity, so edits can be written back to it. */
+  activityId: number | null;
+  activityName: string | null;
 };
 
 export function parsePhonemeParam(value: string | string[] | undefined): string | undefined {
@@ -62,6 +70,68 @@ function countsByPhoneme(lists: ApiWordListSummary[]): Map<string, number> {
   return counts;
 }
 
+type ListContents = {
+  words: PhonemeWord[];
+  /** The list's full size, which `words` is a filtered and capped view of. */
+  total: number;
+  activityCount: number;
+};
+
+/** Reads the list a word search draws from, capped to what the grid can actually hold. */
+async function wordsFrom(listId: number, limit: number): Promise<ListContents> {
+  const detail = await getWordList(listId);
+
+  return {
+    words: playableWords(detail.words, limit),
+    total: detail.wordCount,
+    activityCount: detail.activityCount,
+  };
+}
+
+/**
+ * A saved activity carries its own sound, list and seed, so it bypasses the default-list
+ * lookup entirely — that is what makes reopening one reproduce the puzzle it was saved as.
+ */
+async function loadFromActivity(
+  id: number,
+  inventory: Phoneme[],
+  options: SoundOption[],
+): Promise<Loaded<LoadedWordSearch>> {
+  const activity = await getActivity(id);
+
+  if (activity.type !== "word_search") {
+    return {
+      ok: false,
+      title: "That activity is not a word search",
+      message: `"${activity.name}" is a Wordle.`,
+      hint: "Open it from the Wordle page instead.",
+    };
+  }
+
+  const saved: WordSearchActivity = activity;
+  const list = await wordsFrom(
+    saved.wordList.id,
+    Math.min(saved.wordCount, MAX_WORD_SEARCH_WORDS),
+  );
+
+  return {
+    ok: true,
+    data: {
+      inventory,
+      phoneme: toPhoneme(saved.targetPhoneme),
+      words: list.words,
+      wordListId: saved.wordList.id,
+      wordListWordCount: list.total,
+      wordListActivityCount: list.activityCount,
+      size: saved.gridSize ?? WORD_SEARCH_SIZE,
+      seed: saved.seed ?? seedFor(saved.targetPhoneme.ipa),
+      options,
+      activityId: saved.id,
+      activityName: saved.name,
+    },
+  };
+}
+
 export async function loadWordSearch(
   params: WordSearchParams = {},
 ): Promise<Loaded<LoadedWordSearch>> {
@@ -83,6 +153,10 @@ export async function loadWordSearch(
       wordCount: counts.get(phoneme.ipa) ?? 0,
     }));
 
+    if (params.activity !== undefined) {
+      return await loadFromActivity(params.activity, inventory, options);
+    }
+
     // Without a chosen sound, open on the richest list so the first visit is playable.
     const requested = params.phoneme
       ? inventory.find((phoneme) => phoneme.ipa === params.phoneme)
@@ -93,28 +167,23 @@ export async function loadWordSearch(
     const list = defaultWordListFor(phoneme.ipa, lists);
     // An empty or missing list is a normal state, not a failure: the page offers the
     // picker and, in a later stage, a way to add words to this sound.
-    const detail = list && list.wordCount > 0 ? await getWordList(list.id) : undefined;
-    // A longer word than the grid was built for would be dropped on placement, leaving an
-    // unfindable clue, so over-long words never reach the puzzle.
-    const words: PhonemeWord[] = (detail?.words ?? [])
-      .filter((word) => word.phonemes.length <= MAX_WORD_SOUNDS)
-      .slice(0, MAX_WORD_SEARCH_WORDS)
-      .map((word) => ({
-        english: word.english,
-        phonemes: word.phonemes.map(toPhoneme),
-      }));
+    const contents =
+      list && list.wordCount > 0 ? await wordsFrom(list.id, MAX_WORD_SEARCH_WORDS) : null;
 
     return {
       ok: true,
       data: {
         inventory,
         phoneme,
-        words,
+        words: contents?.words ?? [],
         wordListId: list?.id ?? null,
-        wordListName: list?.name ?? null,
+        wordListWordCount: contents?.total ?? 0,
+        wordListActivityCount: contents?.activityCount ?? 0,
         size: WORD_SEARCH_SIZE,
         seed: seedFor(phoneme.ipa),
         options,
+        activityId: null,
+        activityName: null,
       },
     };
   } catch (error) {

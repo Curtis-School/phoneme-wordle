@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef, useState, useTransition } from "react";
 import { PhonemeTile } from "@/components/phoneme/PhonemeTile";
 import { transcribe } from "@/lib/g2p";
 import { phonemeHint } from "@/lib/phoneme";
+import { ERROR_TEXT, PRIMARY_BUTTON, SECONDARY_BUTTON, TEXT_INPUT } from "@/lib/ui";
 import type { Phoneme, SymbolDisplay } from "@/lib/types";
 
 /** What the built word has to satisfy: an exact sound count, or a sound it must contain. */
@@ -105,7 +106,7 @@ export function WordBuilder({
             ? `Type a ${requirement.wordLength}-sound word`
             : `Type a word with ${requirement.phoneme.ipa} in it`
         }
-        className="h-9 rounded-lg border border-border bg-surface-muted px-2.5 text-sm text-foreground outline-none placeholder:text-muted focus-visible:border-primary"
+        className={TEXT_INPUT}
       />
 
       {spelling.trim() ? (
@@ -179,7 +180,7 @@ export function WordBuilder({
       ) : null}
 
       {error ? (
-        <p role="alert" className="text-xs leading-5 text-present">
+        <p role="alert" className={ERROR_TEXT}>
           {error}
         </p>
       ) : null}
@@ -189,7 +190,7 @@ export function WordBuilder({
           type="button"
           onClick={onCancel}
           disabled={isPending}
-          className="h-9 flex-1 rounded-lg border border-border text-sm font-semibold text-foreground transition-colors hover:bg-surface-muted disabled:opacity-60"
+          className={SECONDARY_BUTTON}
         >
           Cancel
         </button>
@@ -197,7 +198,7 @@ export function WordBuilder({
           type="button"
           onClick={save}
           disabled={!ready || isPending}
-          className="h-9 flex-1 rounded-lg bg-primary text-sm font-bold text-on-primary transition-colors hover:bg-primary-hover disabled:cursor-not-allowed disabled:opacity-40"
+          className={PRIMARY_BUTTON}
         >
           {isPending ? "Saving…" : submitLabel}
         </button>

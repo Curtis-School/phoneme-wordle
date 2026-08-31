@@ -1,16 +1,10 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import {
-  ApiClientError,
-  createWord,
-  deleteWord,
-  getWordList,
-  listWords,
-  setWordListWords,
-} from "@/lib/api/client";
-
-export type SaveWordResult = { ok: true; english: string } | { ok: false; message: string };
+import { deleteWord, getWordList, setWordListWords } from "@/lib/api/client";
+import { createOrReuseWord } from "@/lib/api/words";
+import { actionError } from "@/lib/action-result";
+import type { ActionError, ActionResult } from "@/lib/types";
 
 async function ensureInList(wordListId: number, english: string): Promise<void> {
   const list = await getWordList(wordListId);
@@ -26,7 +20,7 @@ export async function saveWord(input: {
   phonemes: string[];
   wordListId: number;
   expectedLength: number;
-}): Promise<SaveWordResult> {
+}): Promise<{ ok: true; english: string } | ActionError> {
   const english = input.english.trim().toLowerCase();
 
   if (!english) return { ok: false, message: "Type the word first." };
@@ -38,61 +32,43 @@ export async function saveWord(input: {
     };
   }
 
-  try {
-    await createWord({ english, phonemes: input.phonemes });
-  } catch (error) {
-    // Already in the database: reuse it rather than refusing, but only if the stored
-    // sounds are the length this activity needs.
-    if (error instanceof ApiClientError && error.code === "CONFLICT") {
-      const existing = (await listWords({ search: english })).find(
-        (word) => word.english === english,
-      );
+  const outcome = await createOrReuseWord(
+    english,
+    input.phonemes,
+    "Could not save the word. Please try again.",
+  );
 
-      if (!existing) return { ok: false, message: error.message };
+  if (outcome.kind === "error") return { ok: false, message: outcome.message };
 
-      if (existing.phonemes.length !== input.expectedLength) {
-        return {
-          ok: false,
-          message: `“${english}” is already saved with ${existing.phonemes.length} sounds, so it cannot be used here.`,
-        };
-      }
-    } else {
-      return {
-        ok: false,
-        message:
-          error instanceof ApiClientError
-            ? error.message
-            : "Could not save the word. Please try again.",
-      };
-    }
+  if (
+    outcome.kind === "reused" &&
+    outcome.word.phonemes.length !== input.expectedLength
+  ) {
+    return {
+      ok: false,
+      message: `“${english}” is already saved with ${outcome.word.phonemes.length} sounds, so it cannot be used here.`,
+    };
   }
 
   try {
     await ensureInList(input.wordListId, english);
-    revalidatePath("/wordle");
-
-    return { ok: true, english };
   } catch (error) {
-    return {
-      ok: false,
-      message:
-        error instanceof ApiClientError
-          ? error.message
-          : "The word was saved but could not be added to this difficulty.",
-    };
+    return actionError(
+      error,
+      "The word was saved but could not be added to this difficulty.",
+    );
   }
+
+  revalidatePath("/wordle");
+
+  return { ok: true, english };
 }
 
-export type DeleteWordResult = { ok: true } | { ok: false; message: string };
-
-export async function deleteWordById(wordId: number): Promise<DeleteWordResult> {
+export async function deleteWordById(wordId: number): Promise<ActionResult> {
   try {
     await deleteWord(wordId);
   } catch (error) {
-    return {
-      ok: false,
-      message: error instanceof ApiClientError ? error.message : "Could not delete the word.",
-    };
+    return actionError(error, "Could not delete the word.");
   }
 
   revalidatePath("/wordle");

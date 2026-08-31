@@ -12,6 +12,7 @@ import type {
   ApiWordListSummary,
   CreateActivityInput,
   GenerateResponse,
+  UpdateActivityInput,
 } from "./types";
 
 const DEFAULT_BASE_URL = "http://localhost:3001";
@@ -118,11 +119,29 @@ export async function getActivities(type?: ActivityType): Promise<ActivitySummar
   return request<ActivitySummary[]>("/api/activities", { query: { type } });
 }
 
-/** Saves a new configuration. Duplicate `name` is a 409 — it is unique per type. */
+/**
+ * Saves a new configuration. Names are not unique but configurations are: a set of
+ * settings already stored under any name is a 409, whatever this one is called.
+ */
 export async function createActivity(
   input: CreateActivityInput,
 ): Promise<ActivitySummary> {
   return request<ActivitySummary>("/api/activities", { method: "POST", body: input });
+}
+
+export async function getActivity(id: number): Promise<ActivitySummary> {
+  return request<ActivitySummary>(`/api/activities/${id}`);
+}
+
+/** Edits a saved activity in place. `type` cannot change; every other field can. */
+export async function updateActivity(
+  id: number,
+  patch: UpdateActivityInput,
+): Promise<ActivitySummary> {
+  return request<ActivitySummary>(`/api/activities/${id}`, {
+    method: "PATCH",
+    body: patch,
+  });
 }
 
 /** Deletes a saved activity. The word list it points at is left untouched. */
@@ -152,7 +171,10 @@ export async function createWord(input: {
   return request<ApiWord>("/api/words", { method: "POST", body: input });
 }
 
-/** Deletes a word outright — it cascades out of every word list that held it. */
+/**
+ * Deletes a word outright — it cascades out of every word list that held it, and any
+ * Wordle activity that pinned it as its target falls back to drawing a random word.
+ */
 export async function deleteWord(id: number): Promise<void> {
   await request<void>(`/api/words/${id}`, { method: "DELETE" });
 }
@@ -187,4 +209,9 @@ export async function setWordListWords(
     method: "PATCH",
     body: { words },
   });
+}
+
+/** Deletes a word list. `409 IN_USE` while an activity still points at it. */
+export async function deleteWordList(id: number): Promise<void> {
+  await request<void>(`/api/word-lists/${id}`, { method: "DELETE" });
 }

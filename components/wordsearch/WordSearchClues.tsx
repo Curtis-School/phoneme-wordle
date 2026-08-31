@@ -5,6 +5,7 @@ import {
 } from "@/components/phoneme/PhonemeTile";
 import { phonemeHint } from "@/lib/phoneme";
 import { PencilIcon, SaveIcon, TrashIcon } from "@/lib/icons";
+import { ICON_BUTTON, ICON_BUTTON_ACTIVE, ICON_BUTTON_DANGER } from "@/lib/ui";
 import type { PhonemeWord, SymbolDisplay } from "@/lib/types";
 
 /** Editing the clue list is a draft: nothing reaches the API until the activity is saved. */
@@ -24,9 +25,6 @@ type WordSearchCluesProps = {
   showTooltip?: boolean;
   edit?: WordSearchEdit;
 };
-
-const HEADER_BUTTON =
-  "flex size-8 items-center justify-center rounded-lg border border-border text-muted transition-colors hover:border-primary hover:text-foreground";
 
 export function WordSearchClues({
   words,
@@ -52,11 +50,7 @@ export function WordSearchClues({
                 aria-label={editing ? "Stop editing the word list" : "Edit the word list"}
                 aria-expanded={editing}
                 title={editing ? "Done editing" : "Edit the word list"}
-                className={
-                  editing
-                    ? "flex size-8 items-center justify-center rounded-lg border border-primary bg-primary text-on-primary"
-                    : HEADER_BUTTON
-                }
+                className={editing ? ICON_BUTTON_ACTIVE : ICON_BUTTON}
               >
                 <PencilIcon />
               </button>
@@ -65,7 +59,7 @@ export function WordSearchClues({
                 onClick={edit.onSave}
                 aria-label="Save this activity"
                 title="Save this activity"
-                className={HEADER_BUTTON}
+                className={ICON_BUTTON}
               >
                 <SaveIcon />
               </button>
@@ -115,7 +109,7 @@ export function WordSearchClues({
                   onClick={() => edit?.onRemove(word.english)}
                   aria-label={`Remove ${word.english} from the list`}
                   title="Remove from this list"
-                  className="flex size-8 shrink-0 items-center justify-center rounded-lg border border-border text-muted transition-colors hover:border-present hover:text-present"
+                  className={ICON_BUTTON_DANGER}
                 >
                   <TrashIcon />
                 </button>

@@ -33,8 +33,6 @@ const TONE_CLASSES: Record<PhonemeTone, string> = {
 const SIZE_CLASSES: Record<PhonemeSize, string> = {
   sm: "size-8 text-xs",
   board: "size-11 text-sm",
-  // Fills its grid track instead of a fixed size, so a word search shrinks to
-  // fit a phone rather than overflowing the card.
   grid: "aspect-square w-full min-w-0 text-[0.625rem] sm:text-sm",
   lg: "size-14 text-lg",
 };

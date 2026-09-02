@@ -119,8 +119,6 @@ export function WordSearchClues({
                   <TrashIcon />
                 </button>
               ) : (
-                // An empty ring until the word is found, so a list of eight unfound
-                // words does not read as eight ticked ones.
                 <span
                   className={`flex size-5 shrink-0 items-center justify-center rounded-full border-2 transition-colors ${
                     isFound

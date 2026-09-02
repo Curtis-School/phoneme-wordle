@@ -25,11 +25,6 @@ export function PhonemeKeyboard({
 }: PhonemeKeyboardProps) {
   return (
     <div className="flex w-full flex-col items-center gap-2">
-      {/*
-        A fixed column count rather than wrapping: the keyboard is 12 keys, so 4 columns
-        on a phone and 6 from sm up both fill every row. Wrapping stranded a single key
-        on a line of its own at narrow widths.
-      */}
       <div className="grid w-full max-w-sm grid-cols-4 gap-2 self-stretch sm:w-auto sm:max-w-none sm:grid-cols-6 sm:self-center">
         {keys.map((phoneme) => (
           <button

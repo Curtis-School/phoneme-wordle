@@ -121,9 +121,7 @@ export function SavedActivitiesDialog<T extends SavedActivity>({
         ) : null}
 
         {status === "ok" && items.length > 0 ? (
-          // Fixed row height (h-14) x 10 rows + gap-2 x 9 gaps between them, so the
-          // scrollbar only appears once an 11th activity is saved. Rows are taller on
-          // mobile, where the viewport caps the list first.
+          // Scrollbar only appears once an 11th activity is saved.
           <ul className="mt-4 flex max-h-[min(60vh,39.5rem)] flex-col gap-2 overflow-y-auto">
             {items.map((item) => {
               const blocked = downloadBlocked?.(item);
@@ -131,8 +129,6 @@ export function SavedActivitiesDialog<T extends SavedActivity>({
               return (
                 <li
                   key={item.id}
-                  // Below sm the summary takes a line of its own and the controls drop
-                  // beneath it; from sm up the row is the original single line.
                   className={`flex min-h-14 shrink-0 flex-wrap items-center gap-x-2 gap-y-2 rounded-xl border py-2 ${item.id === openId ? "border-primary" : "border-border"} ${DIFFICULTY_ACCENT[item.difficulty]} border-l-4 bg-surface-muted px-3 sm:h-14 sm:flex-nowrap sm:py-0`}
                 >
                   <button

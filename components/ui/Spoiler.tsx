@@ -9,11 +9,6 @@ type SpoilerProps = {
   children: ReactNode;
 };
 
-/**
- * Keeps a spoiler out of sight until asked for. The content stays mounted so
- * anything with its own state survives a peek, and `inert` keeps it off the
- * tab order while it is blurred.
- */
 export function Spoiler({ label, children }: SpoilerProps) {
   const [shown, setShown] = useState(false);
 

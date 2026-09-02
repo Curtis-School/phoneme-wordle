@@ -109,8 +109,6 @@ export function WordleGame({ config, keys, settings }: WordleGameProps) {
       : "bg-surface-muted text-muted";
 
   return (
-    // The board and keyboard top out around 352px, so an uncapped card left a
-    // wide band of empty surface on a desktop. Capped and centred in its column.
     <section className="mx-auto flex w-full max-w-lg flex-col rounded-2xl border border-border bg-surface p-5">
       <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-3 border-b border-border pb-4">
         <div className="flex items-center gap-3">

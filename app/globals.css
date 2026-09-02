@@ -11,7 +11,6 @@
   --primary-hover: #276749;
   --on-primary: #ffffff;
   --border: #cfe6ca;
-  /* For empty slots that must read as a target to fill, not as a hairline. */
   --border-strong: #9cc795;
   --correct: #2f855a;
   --correct-foreground: #ffffff;

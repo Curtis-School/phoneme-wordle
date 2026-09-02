@@ -2,8 +2,6 @@
 
 import { DownloadIcon } from "@/lib/icons";
 
-// Exporting is the last step, not the point of the page, so both variants are
-// outlined rather than solid — the primary fill is left to the save actions.
 const VARIANTS = {
   inline:
     "mt-3.5 flex h-11 w-full items-center justify-center gap-2.5 rounded-xl border border-border bg-surface text-sm font-semibold text-foreground transition-colors hover:border-primary hover:bg-surface-muted",

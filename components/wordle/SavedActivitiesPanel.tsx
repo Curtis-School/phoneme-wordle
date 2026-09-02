@@ -19,7 +19,6 @@ import type { WordleActivity } from "@/lib/api/builder/wordle";
 const TRIGGER_CLASS =
   "flex h-9 w-full items-center justify-center gap-2 whitespace-nowrap rounded-lg border border-border bg-surface px-3.5 text-sm font-semibold text-foreground transition-colors hover:bg-surface-muted";
 
-/** Saving is the main thing a teacher does on this page, so it carries the fill. */
 const SAVE_CLASS =
   "flex h-9 w-full items-center justify-center gap-2 whitespace-nowrap rounded-lg bg-primary px-3.5 text-sm font-bold text-on-primary transition-colors hover:bg-primary-hover disabled:opacity-60";
 
@@ -71,8 +70,6 @@ export function SavedActivitiesPanel(props: SavedActivitiesPanelProps) {
                 ))}
               </PhonemeStrip>
             ) : (
-              // No pinned word means there is nothing fixed to show: this activity draws a
-              // fresh word of the right length each time it is opened.
               <span className="shrink-0 text-xs text-muted">
                 Any {item.wordLength}-sound word
               </span>

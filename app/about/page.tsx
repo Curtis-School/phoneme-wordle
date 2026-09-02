@@ -35,23 +35,6 @@ export default function AboutPage() {
           )
         </span>
       </p>
-      <div className="grid max-w-md gap-3 rounded-2xl border border-border bg-surface p-6 text-sm">
-        <h2 className="font-semibold text-foreground">How it works</h2>
-        <p className="leading-6 text-muted">
-          A Next.js frontend renders the activities and the exporters. It reads and
-          writes everything through <strong>phoneme-api</strong>, a separate Next.js
-          service whose route handlers own a SQLite database via Prisma. Phonemes are
-          stored as rows rather than characters, so multi-character IPA symbols like{" "}
-          <code className="rounded bg-surface-muted px-1.5 py-0.5 font-mono text-xs text-foreground">
-            /θ/
-          </code>{" "}
-          and{" "}
-          <code className="rounded bg-surface-muted px-1.5 py-0.5 font-mono text-xs text-foreground">
-            /eː/
-          </code>{" "}
-          are never split. Both services run in Docker.
-        </p>
-      </div>
 
       <p className="text-sm text-muted">
         Source code:{" "}

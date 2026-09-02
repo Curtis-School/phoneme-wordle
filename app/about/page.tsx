@@ -35,18 +35,31 @@ export default function AboutPage() {
           )
         </span>
       </p>
+
       <p className="text-sm text-muted">
         Source code:{" "}
         <a
           href={SITE.repoUrl}
           target="_blank"
           rel="noopener noreferrer"
-          title="Phoneme Wordle source code on GitHub (opens in a new tab)"
-          aria-label="Phoneme Wordle source code on GitHub (opens in a new tab)"
+          title="Phoneme Wordle frontend source code on GitHub (opens in a new tab)"
+          aria-label="Phoneme Wordle frontend source code on GitHub (opens in a new tab)"
           className="font-medium text-primary underline underline-offset-4 hover:text-primary-hover"
         >
-          github.com/Curtis-School/phoneme-wordle
-        </a>
+          phoneme-wordle
+        </a>{" "}
+        (frontend) ·{" "}
+        <a
+          href={SITE.apiRepoUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          title="Phoneme API source code on GitHub (opens in a new tab)"
+          aria-label="Phoneme API source code on GitHub (opens in a new tab)"
+          className="font-medium text-primary underline underline-offset-4 hover:text-primary-hover"
+        >
+          phoneme-api
+        </a>{" "}
+        (backend)
       </p>
     </PageShell>
   );

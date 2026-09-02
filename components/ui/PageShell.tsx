@@ -13,7 +13,9 @@ export function PageShell({ title, intro, children }: PageShellProps) {
         <h1 className="text-3xl font-bold tracking-tight text-foreground">
           {title}
         </h1>
-        <p className="mt-2 text-base leading-7 text-muted">{intro}</p>
+        <p className="mt-2 whitespace-pre-line text-base leading-7 text-muted">
+          {intro}
+        </p>
       </div>
       {children}
     </div>

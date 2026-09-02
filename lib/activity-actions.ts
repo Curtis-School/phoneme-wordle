@@ -58,9 +58,7 @@ export type SavedWordlePreview = {
   difficulty: Difficulty;
   wordLength: number;
   /**
-   * Null when the activity has no word pinned — either it was saved as a tier that draws a
-   * fresh word every time, or the word it pinned has since been deleted. Either way there
-   * is no fixed puzzle to preview or export until it is opened.
+   * Null when the activity has no word pinned — the word it pinned has since been deleted.
    */
   pinned: { config: WordleConfig; keys: Phoneme[] } | null;
   settings: ActivitySettings;
@@ -79,6 +77,8 @@ export async function getSavedWordleActivities(): Promise<
 
     for (const activity of activities) {
       if (activity.type !== "wordle") continue;
+      // Dont show activities with a deleted word
+      if (!activity.word) continue;
 
       const config: WordleConfig | null = activity.word && {
         englishWord: activity.word.english,

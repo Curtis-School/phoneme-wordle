@@ -109,7 +109,7 @@ export function WordleGame({ config, keys, settings }: WordleGameProps) {
       : "bg-surface-muted text-muted";
 
   return (
-    <section className="flex flex-col rounded-2xl border border-border bg-surface p-5">
+    <section className="mx-auto flex w-full max-w-lg flex-col rounded-2xl border border-border bg-surface p-5">
       <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-3 border-b border-border pb-4">
         <div className="flex items-center gap-3">
           <span className="text-sm font-semibold text-foreground">

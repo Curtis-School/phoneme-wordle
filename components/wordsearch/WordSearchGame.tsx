@@ -1,7 +1,10 @@
 "use client";
 
 import { useMemo, useRef, useState } from "react";
-import type { PointerEvent as ReactPointerEvent } from "react";
+import type {
+  KeyboardEvent as ReactKeyboardEvent,
+  PointerEvent as ReactPointerEvent,
+} from "react";
 import type { ActivitySettings, PhonemeWord } from "@/lib/types";
 import {
   lineBetween,
@@ -46,6 +49,11 @@ export function WordSearchGame({
   const [selection, setSelection] = useState<Cell[]>([]);
   const [found, setFound] = useState<string[]>([]);
   const [revealed, setRevealed] = useState(false);
+  /** The cell arrow keys are on. Only this one is tabbable, so Tab crosses the grid once. */
+  const [cursor, setCursor] = useState<Cell>({ row: 0, col: 0 });
+  /** Where a keyboard selection started; null while no word is part-selected. */
+  const [anchor, setAnchor] = useState<Cell | null>(null);
+  const [announcement, setAnnouncement] = useState("");
 
   const shownFound = useMemo(
     () => (revealed ? puzzle.words.map((placement) => placement.english) : found),
@@ -72,6 +80,7 @@ export function WordSearchGame({
     const cell = cellFromNode(event.target as Element);
     if (!cell) return;
     startRef.current = cell;
+    setAnchor(null);
     updateSelection([cell]);
     gridRef.current?.setPointerCapture(event.pointerId);
   }
@@ -85,14 +94,98 @@ export function WordSearchGame({
     updateSelection(lineBetween(startRef.current, cell) ?? [startRef.current]);
   }
 
+  /** Scores a completed path, whether it was dragged or typed. */
+  function commit(path: readonly Cell[]) {
+    const match = path.length > 1 ? matchesPlacement(path, puzzle.words) : null;
+
+    if (match) {
+      if (!found.includes(match.english)) {
+        setFound((current) => [...current, match.english]);
+      }
+      setAnnouncement(`Found ${match.english}.`);
+    } else {
+      setAnnouncement("Not one of the words.");
+    }
+  }
+
   function handleUp() {
     if (!startRef.current) return;
-    const match = matchesPlacement(selectionRef.current, puzzle.words);
-    if (match && !found.includes(match.english)) {
-      setFound((current) => [...current, match.english]);
-    }
+    commit(selectionRef.current);
     startRef.current = null;
     updateSelection([]);
+  }
+
+  function focusCell(cell: Cell) {
+    gridRef.current
+      ?.querySelector<HTMLElement>(
+        `[data-row="${cell.row}"][data-col="${cell.col}"]`,
+      )
+      ?.focus();
+  }
+
+  function moveTo(cell: Cell) {
+    setCursor(cell);
+    focusCell(cell);
+    // With a start cell chosen, moving previews the word being spelled out.
+    if (anchor) updateSelection(lineBetween(anchor, cell) ?? [anchor]);
+  }
+
+  function handleKeyDown(event: ReactKeyboardEvent<HTMLElement>, cell: Cell) {
+    const last = puzzle.size - 1;
+    const clamp = (value: number) => Math.max(0, Math.min(last, value));
+
+    const moves: Record<string, Cell> = {
+      ArrowUp: { row: clamp(cell.row - 1), col: cell.col },
+      ArrowDown: { row: clamp(cell.row + 1), col: cell.col },
+      ArrowLeft: { row: cell.row, col: clamp(cell.col - 1) },
+      ArrowRight: { row: cell.row, col: clamp(cell.col + 1) },
+      Home: { row: cell.row, col: 0 },
+      End: { row: cell.row, col: last },
+    };
+
+    const next = moves[event.key];
+
+    if (next) {
+      event.preventDefault();
+      moveTo(next);
+      return;
+    }
+
+    if (event.key === "Enter" || event.key === " ") {
+      event.preventDefault();
+
+      if (!anchor) {
+        setAnchor(cell);
+        updateSelection([cell]);
+        setAnnouncement(
+          `Start of word at row ${cell.row + 1}, column ${cell.col + 1}. Move to the last sound and press Enter again.`,
+        );
+        return;
+      }
+
+      commit(lineBetween(anchor, cell) ?? [anchor]);
+      setAnchor(null);
+      updateSelection([]);
+      return;
+    }
+
+    if (event.key === "Escape" && anchor) {
+      event.preventDefault();
+      setAnchor(null);
+      updateSelection([]);
+      setAnnouncement("Selection cleared.");
+    }
+  }
+
+  // A shuffled grid invalidates a half-finished selection. Adjusting during render
+  // rather than in an effect keeps it out of a second render pass.
+  const [renderedPuzzle, setRenderedPuzzle] = useState(puzzle);
+
+  if (renderedPuzzle !== puzzle) {
+    setRenderedPuzzle(puzzle);
+    setAnchor(null);
+    // The drag ref is rewritten on every pointer down, so clearing the state is enough.
+    setSelection([]);
   }
 
   const solved = found.length === puzzle.words.length;
@@ -142,12 +235,12 @@ export function WordSearchGame({
           </div>
         </div>
 
-        <div className="flex justify-center overflow-x-auto pt-4">
+        <div className="pt-4">
           <div
             ref={gridRef}
             role="grid"
             aria-label="Phoneme word search grid"
-            className="grid w-fit touch-none select-none gap-1.5"
+            className="mx-auto grid w-full max-w-100 touch-none select-none gap-1 sm:gap-1.5"
             style={{
               gridTemplateColumns: `repeat(${puzzle.size}, minmax(0, 1fr))`,
             }}
@@ -156,37 +249,59 @@ export function WordSearchGame({
             onPointerUp={handleUp}
             onPointerCancel={handleUp}
           >
-            {puzzle.grid.map((row, rowIndex) =>
-              row.map((cell, colIndex) => {
-                const cellKey = `${rowIndex},${colIndex}`;
-                const isFound = foundKeys.has(cellKey);
-                const tone = isFound
-                  ? "correct"
-                  : selectedKeys.has(cellKey)
-                    ? "present"
-                    : "muted";
-                return (
-                  <div
-                    key={cellKey}
-                    data-cell=""
-                    data-row={rowIndex}
-                    data-col={colIndex}
-                  >
-                    <PhonemeTile
-                      label={cell.ipa}
-                      reveal={cell.english}
-                      hint={phonemeHint(cell)}
-                      display={settings.symbolDisplay}
-                      showTooltip={settings.showTooltips}
-                      revealed={isFound}
-                      size="board"
-                      tone={tone}
-                    />
-                  </div>
-                );
-              }),
-            )}
+            {puzzle.grid.map((row, rowIndex) => (
+              // display:contents keeps the rows in the accessibility tree without
+              // breaking the single CSS grid the cells are laid out on.
+              <div key={rowIndex} role="row" className="contents">
+                {row.map((cell, colIndex) => {
+                  const cellKey = `${rowIndex},${colIndex}`;
+                  const isFound = foundKeys.has(cellKey);
+                  const isSelected = selectedKeys.has(cellKey);
+                  const tone = isFound ? "correct" : isSelected ? "present" : "muted";
+                  return (
+                    <button
+                      key={cellKey}
+                      type="button"
+                      role="gridcell"
+                      data-cell=""
+                      data-row={rowIndex}
+                      data-col={colIndex}
+                      tabIndex={
+                        cursor.row === rowIndex && cursor.col === colIndex ? 0 : -1
+                      }
+                      aria-selected={isSelected}
+                      aria-label={`${phonemeHint(cell)}, row ${rowIndex + 1}, column ${colIndex + 1}`}
+                      onFocus={() => setCursor({ row: rowIndex, col: colIndex })}
+                      onKeyDown={(event) =>
+                        handleKeyDown(event, { row: rowIndex, col: colIndex })
+                      }
+                      className="w-full rounded-lg"
+                    >
+                      <PhonemeTile
+                        label={cell.ipa}
+                        reveal={cell.english}
+                        hint={phonemeHint(cell)}
+                        display={settings.symbolDisplay}
+                        showTooltip={settings.showTooltips}
+                        revealed={isFound}
+                        size="grid"
+                        tone={tone}
+                      />
+                    </button>
+                  );
+                })}
+              </div>
+            ))}
           </div>
+
+          <p className="mt-3 text-center text-xs text-muted">
+            Drag across the grid, or use the arrow keys and press Enter on the first and
+            last sound of a word.
+          </p>
+
+          <p role="status" aria-live="polite" className="sr-only">
+            {announcement}
+          </p>
         </div>
       </section>
 

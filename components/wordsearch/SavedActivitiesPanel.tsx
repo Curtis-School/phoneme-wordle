@@ -58,7 +58,9 @@ export function SavedActivitiesPanel({ openId }: SavedActivitiesPanelProps) {
       summary={(item) => (
         <>
           <PhonemeTile label={item.phoneme.ipa} size="sm" />
-          <span className="shrink-0 text-sm font-semibold text-foreground">{item.name}</span>
+          <span className="min-w-0 truncate text-sm font-semibold text-foreground">
+            {item.name}
+          </span>
           <span className="shrink-0 text-xs font-semibold text-muted">
             {item.words.length} words
           </span>

@@ -8,7 +8,7 @@ export type PhonemeTone =
   | "present"
   | "absent";
 
-export type PhonemeSize = "sm" | "board" | "lg";
+export type PhonemeSize = "sm" | "board" | "grid" | "lg";
 
 type PhonemeTileProps = {
   label?: string;
@@ -23,7 +23,7 @@ type PhonemeTileProps = {
 };
 
 const TONE_CLASSES: Record<PhonemeTone, string> = {
-  default: "border border-border bg-surface text-foreground",
+  default: "border border-border-strong bg-surface text-foreground",
   muted: "border border-border/60 bg-surface-muted text-muted",
   correct: "border border-correct bg-correct text-correct-foreground",
   present: "border border-present bg-present text-present-foreground",
@@ -33,6 +33,7 @@ const TONE_CLASSES: Record<PhonemeTone, string> = {
 const SIZE_CLASSES: Record<PhonemeSize, string> = {
   sm: "size-8 text-xs",
   board: "size-11 text-sm",
+  grid: "aspect-square w-full min-w-0 text-[0.625rem] sm:text-sm",
   lg: "size-14 text-lg",
 };
 
@@ -84,9 +85,11 @@ export function PhonemeTile({
 
   if (reveal) {
     if (revealed) {
+      // Solving settles the tile on the English spelling, but keeps the hover
+      // swap so the IPA is still one hover away.
       return (
-        <div title={title} className={base}>
-          <span className="uppercase tracking-tight">{reveal}</span>
+        <div title={title} className={`group relative ${base}`}>
+          <FlipFace ipa={label} english={reveal} display="english" />
         </div>
       );
     }
@@ -98,9 +101,11 @@ export function PhonemeTile({
     );
   }
 
+  // No uppercase here: a bare label is always IPA, where case is contrastive
+  // (/i/ and /I/ are different sounds).
   return (
     <div title={title} className={base}>
-      <span className="uppercase tracking-tight">{label}</span>
+      <span className="tracking-tight">{label}</span>
     </div>
   );
 }

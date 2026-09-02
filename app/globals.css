@@ -11,6 +11,7 @@
   --primary-hover: #276749;
   --on-primary: #ffffff;
   --border: #cfe6ca;
+  --border-strong: #9cc795;
   --correct: #2f855a;
   --correct-foreground: #ffffff;
   --present: #b7791f;
@@ -29,7 +30,8 @@
   --primary: #48bb78;
   --primary-hover: #68d391;
   --on-primary: #04120a;
-  --border: #1e3320;
+  --border: #26402a;
+  --border-strong: #4f7154;
   --correct: #48bb78;
   --correct-foreground: #04120a;
   --present: #d69e2e;
@@ -49,6 +51,7 @@
   --color-primary-hover: var(--primary-hover);
   --color-on-primary: var(--on-primary);
   --color-border: var(--border);
+  --color-border-strong: var(--border-strong);
   --color-correct: var(--correct);
   --color-correct-foreground: var(--correct-foreground);
   --color-present: var(--present);

@@ -16,6 +16,10 @@ export const ROW_ICON_BUTTON_DANGER =
 export const ACTION_BUTTON =
   "inline-flex h-9 items-center gap-2 whitespace-nowrap rounded-lg border border-border bg-surface px-3.5 text-sm font-semibold text-foreground transition-colors hover:bg-surface-muted";
 
+/** ACTION_BUTTON's shape with the primary fill, for the main action in a header. */
+export const PRIMARY_ACTION_BUTTON =
+  "inline-flex h-9 items-center gap-2 whitespace-nowrap rounded-lg bg-primary px-3.5 text-sm font-bold text-on-primary transition-colors hover:bg-primary-hover";
+
 export const SECONDARY_BUTTON =
   "h-9 flex-1 rounded-lg border border-border text-sm font-semibold text-foreground transition-colors hover:bg-surface-muted disabled:opacity-60";
 

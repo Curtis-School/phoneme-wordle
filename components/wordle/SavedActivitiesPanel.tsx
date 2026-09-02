@@ -19,6 +19,10 @@ import type { WordleActivity } from "@/lib/api/builder/wordle";
 const TRIGGER_CLASS =
   "flex h-9 w-full items-center justify-center gap-2 whitespace-nowrap rounded-lg border border-border bg-surface px-3.5 text-sm font-semibold text-foreground transition-colors hover:bg-surface-muted";
 
+/** Saving is the main thing a teacher does on this page, so it carries the fill. */
+const SAVE_CLASS =
+  "flex h-9 w-full items-center justify-center gap-2 whitespace-nowrap rounded-lg bg-primary px-3.5 text-sm font-bold text-on-primary transition-colors hover:bg-primary-hover disabled:opacity-60";
+
 type SavedActivitiesPanelProps = {
   summary: WordleActivity;
   wordId: number;
@@ -57,7 +61,7 @@ export function SavedActivitiesPanel(props: SavedActivitiesPanelProps) {
         href={(item) => `/wordle?activity=${item.id}`}
         summary={(item) => (
           <>
-            <span className="shrink-0 text-sm font-semibold text-foreground">
+            <span className="min-w-0 truncate text-sm font-semibold text-foreground">
               {item.pinned ? item.pinned.config.englishWord : item.name}
             </span>
             {item.pinned ? (
@@ -110,10 +114,10 @@ function SaveButton({ summary, wordId, englishWord, settings }: SavedActivitiesP
         onClick={save}
         disabled={isPending}
         title={`Save “${englishWord}” at ${summary.difficulty} difficulty`}
-        className={TRIGGER_CLASS}
+        className={SAVE_CLASS}
       >
         <SaveIcon />
-        {isPending ? "Saving…" : "Save configuration"}
+        {isPending ? "Saving…" : "Save activity"}
       </button>
 
       <ToastMessage toast={toast} />

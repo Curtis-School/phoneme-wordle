@@ -1,5 +1,6 @@
 import { PageShell } from "@/components/ui/PageShell";
 import { ApiErrorNotice } from "@/components/ui/ApiErrorNotice";
+import { Spoiler } from "@/components/ui/Spoiler";
 import {
   PhonemeStrip,
   PhonemeTile,
@@ -69,7 +70,14 @@ export default async function WordlePage({ searchParams }: PageProps<"/wordle">)
             <ul className="flex flex-col gap-2.5">
               {LEGEND.map((item) => (
                 <li key={item.tone} className="flex items-center gap-3">
-                  <PhonemeTile label="æ" tone={item.tone} size="sm" />
+                  <PhonemeTile
+                    label="æ"
+                    reveal="a"
+                    display={settings.symbolDisplay}
+                    showTooltip={false}
+                    tone={item.tone}
+                    size="sm"
+                  />
                   <span className="text-sm text-muted">{item.text}</span>
                 </li>
               ))}
@@ -87,29 +95,31 @@ export default async function WordlePage({ searchParams }: PageProps<"/wordle">)
               englishWord={config.englishWord}
               settings={settings}
             />
-            <div className="flex flex-col gap-2.5 rounded-xl border border-border bg-surface-muted px-3 py-2.5">
-              <WordControls
-                key={summary.id}
-                englishWord={config.englishWord}
-                wordId={wordId}
-                difficulty={summary.difficulty}
-                wordLength={summary.wordLength}
-                wordListId={summary.wordList.id}
-                inventory={inventory}
-                display={settings.symbolDisplay}
-                error={wordError}
-              />
-              <PhonemeStrip>
-                {config.word.map((phoneme, index) => (
-                  <PhonemeTile
-                    key={index}
-                    label={phoneme.ipa}
-                    reveal={phoneme.english}
-                    size="sm"
-                  />
-                ))}
-              </PhonemeStrip>
-            </div>
+            <Spoiler label="answer">
+              <div className="flex flex-col gap-2.5 rounded-xl border border-border bg-surface-muted px-3 py-2.5">
+                <WordControls
+                  key={summary.id}
+                  englishWord={config.englishWord}
+                  wordId={wordId}
+                  difficulty={summary.difficulty}
+                  wordLength={summary.wordLength}
+                  wordListId={summary.wordList.id}
+                  inventory={inventory}
+                  display={settings.symbolDisplay}
+                  error={wordError}
+                />
+                <PhonemeStrip>
+                  {config.word.map((phoneme, index) => (
+                    <PhonemeTile
+                      key={index}
+                      label={phoneme.ipa}
+                      reveal={phoneme.english}
+                      size="sm"
+                    />
+                  ))}
+                </PhonemeStrip>
+              </div>
+            </Spoiler>
             <ExportButton config={config} keys={keys} settings={settings} />
           </section>
         </div>

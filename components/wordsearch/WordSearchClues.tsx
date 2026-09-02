@@ -4,8 +4,13 @@ import {
   PhonemeTile,
 } from "@/components/phoneme/PhonemeTile";
 import { phonemeHint } from "@/lib/phoneme";
-import { PencilIcon, SaveIcon, TrashIcon } from "@/lib/icons";
-import { ICON_BUTTON, ICON_BUTTON_ACTIVE, ICON_BUTTON_DANGER } from "@/lib/ui";
+import { CheckIcon, PencilIcon, SaveIcon, TrashIcon } from "@/lib/icons";
+import {
+  ICON_BUTTON,
+  ICON_BUTTON_ACTIVE,
+  ICON_BUTTON_DANGER,
+  PRIMARY_ACTION_BUTTON,
+} from "@/lib/ui";
 import type { PhonemeWord, SymbolDisplay } from "@/lib/types";
 
 /** Editing the clue list is a draft: nothing reaches the API until the activity is saved. */
@@ -36,7 +41,7 @@ export function WordSearchClues({
   const editing = edit?.editing ?? false;
   return (
     <section className="overflow-hidden rounded-2xl border border-border bg-surface">
-      <div className="flex items-center justify-between border-b border-border px-4.5 py-4">
+      <div className="flex flex-wrap items-center justify-between gap-2 border-b border-border px-4.5 py-4">
         <h2 className="text-sm font-semibold text-foreground">Words to find</h2>
         <div className="flex items-center gap-2">
           <span className="text-xs font-semibold text-muted">
@@ -57,11 +62,11 @@ export function WordSearchClues({
               <button
                 type="button"
                 onClick={edit.onSave}
-                aria-label="Save this activity"
                 title="Save this activity"
-                className={ICON_BUTTON}
+                className={PRIMARY_ACTION_BUTTON}
               >
                 <SaveIcon />
+                Save activity
               </button>
             </>
           ) : null}
@@ -114,13 +119,19 @@ export function WordSearchClues({
                   <TrashIcon />
                 </button>
               ) : (
+                // An empty ring until the word is found, so a list of eight unfound
+                // words does not read as eight ticked ones.
                 <span
-                  aria-hidden="true"
-                  className={`w-5 text-center text-sm font-bold text-primary ${
-                    isFound ? "opacity-100" : "opacity-15"
+                  className={`flex size-5 shrink-0 items-center justify-center rounded-full border-2 transition-colors ${
+                    isFound
+                      ? "border-primary bg-primary text-on-primary"
+                      : "border-border"
                   }`}
                 >
-                  ✓
+                  {isFound ? <CheckIcon /> : null}
+                  <span className="sr-only">
+                    {isFound ? `${word.english} found` : `${word.english} not found yet`}
+                  </span>
                 </span>
               )}
             </li>

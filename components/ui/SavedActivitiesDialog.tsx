@@ -122,21 +122,24 @@ export function SavedActivitiesDialog<T extends SavedActivity>({
 
         {status === "ok" && items.length > 0 ? (
           // Fixed row height (h-14) x 10 rows + gap-2 x 9 gaps between them, so the
-          // scrollbar only appears once an 11th activity is saved.
-          <ul className="mt-4 flex max-h-[39.5rem] flex-col gap-2 overflow-y-auto">
+          // scrollbar only appears once an 11th activity is saved. Rows are taller on
+          // mobile, where the viewport caps the list first.
+          <ul className="mt-4 flex max-h-[min(60vh,39.5rem)] flex-col gap-2 overflow-y-auto">
             {items.map((item) => {
               const blocked = downloadBlocked?.(item);
 
               return (
                 <li
                   key={item.id}
-                  className={`flex h-14 shrink-0 items-center gap-2 overflow-x-auto rounded-xl border ${item.id === openId ? "border-primary" : "border-border"} ${DIFFICULTY_ACCENT[item.difficulty]} border-l-4 bg-surface-muted px-3`}
+                  // Below sm the summary takes a line of its own and the controls drop
+                  // beneath it; from sm up the row is the original single line.
+                  className={`flex min-h-14 shrink-0 flex-wrap items-center gap-x-2 gap-y-2 rounded-xl border py-2 ${item.id === openId ? "border-primary" : "border-border"} ${DIFFICULTY_ACCENT[item.difficulty]} border-l-4 bg-surface-muted px-3 sm:h-14 sm:flex-nowrap sm:py-0`}
                 >
                   <button
                     type="button"
                     onClick={() => openActivity(item)}
                     title={`Open “${item.name}” to play and edit it`}
-                    className="flex min-w-0 flex-1 items-center gap-2 rounded-lg text-left transition-opacity hover:opacity-70"
+                    className="flex w-full min-w-0 items-center gap-2 overflow-hidden rounded-lg text-left transition-opacity hover:opacity-70 sm:w-auto sm:flex-1"
                   >
                     {summary(item)}
                     <span
@@ -145,31 +148,33 @@ export function SavedActivitiesDialog<T extends SavedActivity>({
                       {item.difficulty}
                     </span>
                   </button>
-                  <span
-                    title={item.settings.theme === "dark" ? "Dark theme" : "Light theme"}
-                    className="flex shrink-0 items-center justify-center text-muted"
-                  >
-                    {item.settings.theme === "dark" ? <MoonIcon /> : <SunIcon />}
-                  </span>
-                  <button
-                    type="button"
-                    onClick={() => download(item)}
-                    disabled={blocked !== undefined}
-                    aria-label={`Download ${item.name}`}
-                    title={blocked ?? "Download playable .html"}
-                    className={ROW_ICON_BUTTON}
-                  >
-                    <DownloadIcon />
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setPendingDelete(item)}
-                    aria-label={`Delete ${item.name}`}
-                    title="Delete this activity"
-                    className={ROW_ICON_BUTTON_DANGER}
-                  >
-                    <TrashIcon />
-                  </button>
+                  <div className="ml-auto flex shrink-0 items-center gap-2">
+                    <span
+                      title={item.settings.theme === "dark" ? "Dark theme" : "Light theme"}
+                      className="flex shrink-0 items-center justify-center text-muted"
+                    >
+                      {item.settings.theme === "dark" ? <MoonIcon /> : <SunIcon />}
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => download(item)}
+                      disabled={blocked !== undefined}
+                      aria-label={`Download ${item.name}`}
+                      title={blocked ?? "Download playable .html"}
+                      className={ROW_ICON_BUTTON}
+                    >
+                      <DownloadIcon />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setPendingDelete(item)}
+                      aria-label={`Delete ${item.name}`}
+                      title="Delete this activity"
+                      className={ROW_ICON_BUTTON_DANGER}
+                    >
+                      <TrashIcon />
+                    </button>
+                  </div>
                 </li>
               );
             })}

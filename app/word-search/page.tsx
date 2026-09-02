@@ -11,7 +11,7 @@ import {
 import { getActivitySettings } from "@/lib/settings-cookie";
 
 const INTRO =
-  "Find every word that features the target sound by dragging across the grid, then export a self-contained copy that plays offline.";
+  "Find every word that features the target sound by dragging across the grid, then export a self-contained copy that plays offline.\nGames will be easier with more words in the word list.";
 
 export default async function WordSearchPage({
   searchParams,

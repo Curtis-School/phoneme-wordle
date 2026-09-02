@@ -2,10 +2,12 @@
 
 import { DownloadIcon } from "@/lib/icons";
 
+// Exporting is the last step, not the point of the page, so both variants are
+// outlined rather than solid — the primary fill is left to the save actions.
 const VARIANTS = {
   inline:
-    "mt-3.5 flex h-11 w-full items-center justify-center gap-2.5 rounded-xl bg-primary text-sm font-bold text-on-primary transition-colors hover:bg-primary-hover",
-  card: "flex h-full min-h-18 w-full items-center justify-center gap-2.5 rounded-2xl bg-primary text-sm font-bold text-on-primary transition-colors hover:bg-primary-hover",
+    "mt-3.5 flex h-11 w-full items-center justify-center gap-2.5 rounded-xl border border-border bg-surface text-sm font-semibold text-foreground transition-colors hover:border-primary hover:bg-surface-muted",
+  card: "flex h-full min-h-18 w-full items-center justify-center gap-2.5 rounded-2xl border border-border bg-surface text-sm font-semibold text-foreground transition-colors hover:border-primary hover:bg-surface-muted",
 } as const;
 
 type ExportButtonProps = {

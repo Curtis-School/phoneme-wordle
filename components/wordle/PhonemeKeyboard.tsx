@@ -23,27 +23,27 @@ export function PhonemeKeyboard({
   display = "ipa",
   showTooltip = true,
 }: PhonemeKeyboardProps) {
-  const half = Math.ceil(keys.length / 2);
-  const rows = [keys.slice(0, half), keys.slice(half)];
-
   return (
-    <div className="flex flex-col items-center gap-2">
-      {rows.map((row, rowIndex) => (
-        <div key={rowIndex} className="flex flex-wrap justify-center gap-2">
-          {row.map((phoneme) => (
-            <button
-              key={phoneme.ipa}
-              type="button"
-              disabled={disabled}
-              onClick={() => onPress(phoneme.ipa)}
-              title={showTooltip ? phonemeHint(phoneme) : undefined}
-              className="group relative inline-flex h-12 min-w-13 items-center justify-center rounded-xl border border-border bg-surface px-3 text-sm font-semibold text-foreground transition-colors hover:border-primary disabled:opacity-40"
-            >
-              <FlipFace ipa={phoneme.ipa} english={phoneme.english} display={display} />
-            </button>
-          ))}
-        </div>
-      ))}
+    <div className="flex w-full flex-col items-center gap-2">
+      {/*
+        A fixed column count rather than wrapping: the keyboard is 12 keys, so 4 columns
+        on a phone and 6 from sm up both fill every row. Wrapping stranded a single key
+        on a line of its own at narrow widths.
+      */}
+      <div className="grid w-full max-w-sm grid-cols-4 gap-2 self-stretch sm:w-auto sm:max-w-none sm:grid-cols-6 sm:self-center">
+        {keys.map((phoneme) => (
+          <button
+            key={phoneme.ipa}
+            type="button"
+            disabled={disabled}
+            onClick={() => onPress(phoneme.ipa)}
+            title={showTooltip ? phonemeHint(phoneme) : undefined}
+            className="group relative inline-flex h-12 w-full min-w-13 items-center justify-center rounded-xl border border-border bg-surface px-1 text-sm font-semibold text-foreground transition-colors hover:border-primary disabled:opacity-40"
+          >
+            <FlipFace ipa={phoneme.ipa} english={phoneme.english} display={display} />
+          </button>
+        ))}
+      </div>
       <div className="mt-0.5 flex justify-center gap-2">
         <button
           type="button"

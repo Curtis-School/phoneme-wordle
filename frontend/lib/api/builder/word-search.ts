@@ -143,7 +143,7 @@ export async function loadWordSearch(
         ok: false,
         title: "The API has no phonemes",
         message: "There is no phoneme inventory to build a word search from.",
-        hint: "Seed the database with `npm run db:seed` in phoneme-api.",
+        hint: "Seed the database with `npm run db:seed` in backend/.",
       };
     }
 

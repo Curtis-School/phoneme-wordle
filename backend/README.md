@@ -1,6 +1,6 @@
 # phoneme-api
 
-Backend API for **phoneme-wordle** (CSE3CWA Assessment 2), on Next.js 16 Route Handlers.
+Backend API for the [frontend](../frontend) (CSE3CWA Assessment 2), on Next.js 16 Route Handlers.
 No UI — every route returns JSON. Runs on **port 3001**; the frontend owns 3000.
 
 ## Getting started
@@ -21,7 +21,8 @@ npm run dev          # http://localhost:3001
 | `db:reset` | Drop, re-migrate, re-seed. Prompts first. |
 | `db:studio` | Browse the database in Prisma Studio. |
 
-Docker: `docker compose up --build` → http://localhost:3001/health. `down -v` discards the database volume.
+Docker: `docker compose up --build` from the **repo root** starts this API and the frontend
+together → http://localhost:3001/health. `down -v` discards the database volume.
 
 ## Database
 
@@ -215,8 +216,7 @@ prisma/
   seed-data/          # phoneme dataset carried over from Assessment 1
 prisma.config.ts      # datasource url, migration paths, seed command
 next.config.ts        # rewrites / -> /health
-Dockerfile            # two-stage build
-docker-compose.yml    # service, port, volume
+Dockerfile            # two-stage build; run via ../docker-compose.yml
 ```
 
 ## Notes for this Next.js version

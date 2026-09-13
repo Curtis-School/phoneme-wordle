@@ -1,0 +1,43 @@
+# Fixed project name, so the volume is `phoneme_phoneme-data` whatever the checkout is called.
+name: phoneme
+
+services:
+  api:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    ports:
+      - "3001:3001"
+    environment:
+      - NODE_ENV=production
+      - DATABASE_URL=file:/app/data/phoneme.db
+    volumes:
+      # Keeps the SQLite file out of the container's writable layer, so saved word
+      # lists survive the container being replaced.
+      - phoneme-data:/app/data
+    healthcheck:
+      # Migrations and the seed run before the server starts, hence the grace period.
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1:3001/health"]
+      interval: 5s
+      timeout: 3s
+      retries: 12
+      start_period: 30s
+    restart: unless-stopped
+
+  web:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      # Server-side only: the browser never talks to the API, so the service name works.
+      - API_BASE_URL=http://api:3001
+    depends_on:
+      api:
+        condition: service_healthy
+    restart: unless-stopped
+
+volumes:
+  phoneme-data:

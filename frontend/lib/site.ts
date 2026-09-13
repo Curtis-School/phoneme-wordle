@@ -5,9 +5,16 @@ export const SITE = {
   author: "Curtis Bowman",
   studentNumber: "20962451",
   repoUrl: "https://github.com/Curtis-School/phoneme-wordle",
-  demoUrl:
-    "https://latrobe.zoom.us/rec/share/2l4gzKB4A9G88Aeli_aN6VdWdanGJvFJU0Kpjo_EXoMNQdmDrPC6ao6XhFWbegbY.3xcVJZcbhdCcOLI6?startTime=1786237421000",
-  demoPasscode: "3P2H2S2",
+  demos: {
+    assessment1: {
+      url: "https://latrobe.zoom.us/rec/share/2l4gzKB4A9G88Aeli_aN6VdWdanGJvFJU0Kpjo_EXoMNQdmDrPC6ao6XhFWbegbY.3xcVJZcbhdCcOLI6?startTime=1786237421000",
+      passcode: "3P2H2S2",
+    },
+    assessment2: {
+      url: "https://latrobe.zoom.us/rec/share/p-PJAbJvhv7wTDyit_l4ULW6CIwAZgUY8SQtBg6kVIGzk28Z-Xkj-HWtOl3sKoSg.1MZhEB8QU53NEySl",
+      passcode: "=^Sath0!",
+    },
+  },
 } as const;
 
 export type NavLink = {

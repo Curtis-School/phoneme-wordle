@@ -1,0 +1,21 @@
+# Rebuilt inside the image
+node_modules
+.next
+out
+build
+
+# Local-only state — API_BASE_URL is supplied by docker-compose.yml
+.env
+.env.*
+!.env.example
+
+# Not needed at build time
+.git
+.gitignore
+.claude
+*.tsbuildinfo
+npm-debug.log*
+.DS_Store
+README.md
+Dockerfile
+.dockerignore

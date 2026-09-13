@@ -5,7 +5,7 @@ phoneme-based classroom activities — a **Wordle** and a **Word Search** — an
 export each as a single self-contained `.html` file that plays offline.
 
 Built for La Trobe **CSE3CWA**. Assessment 2 replaces Assessment 1's bundled
-dataset with [`phoneme-api`](https://github.com/Curtis-School/phoneme-api), so
+dataset with the API in [`../backend`](../backend), so
 every puzzle is generated from the database on each request.
 
 ## Features
@@ -31,8 +31,11 @@ TypeScript (strict), Tailwind CSS 4. No other runtime dependencies.
 
 ## Getting started
 
-Start the activity API first — the builder pages have no bundled content. In
-`phoneme-api`, run `npm run dev` (or `docker compose up`); it listens on **3001**.
+The quickest route is `docker compose up --build` from the repo root, which runs
+this app and the API together — see the [root README](../README.md).
+
+To work on the frontend alone, start the activity API first — the builder pages
+have no bundled content. In `../backend`, run `npm run dev`; it listens on **3001**.
 
 ```bash
 npm install

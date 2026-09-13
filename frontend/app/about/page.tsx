@@ -15,26 +15,38 @@ export default function AboutPage() {
         <dt className="font-medium text-muted">Subject</dt>
         <dd className="text-foreground">{SITE.assessment}</dd>
       </dl>
-      <p className="text-sm text-muted">
-        How-to video:{" "}
-        <a
-          href={SITE.demoUrl}
-          target="_blank"
-          rel="noopener noreferrer"
-          title="Phoneme Wordle video recording (opens in a new tab)"
-          aria-label="Phoneme Wordle video recording (opens in a new tab)"
-          className="font-medium text-primary underline underline-offset-4 hover:text-primary-hover"
-        >
-          Watch the Zoom recording
-        </a>{" "}
-        <span className="whitespace-nowrap">
-          (passcode{" "}
-          <code className="rounded bg-surface px-1.5 py-0.5 font-mono text-xs text-foreground">
-            {SITE.demoPasscode}
-          </code>
-          )
-        </span>
-      </p>
+      <section className="flex flex-col gap-2">
+        <h2 className="text-lg font-semibold text-foreground">
+          Assessment 1 demo
+        </h2>
+        <p className="text-sm text-muted">
+          How-to video:{" "}
+          <a
+            href={SITE.demoUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            title="Phoneme Wordle Assessment 1 video recording (opens in a new tab)"
+            aria-label="Phoneme Wordle Assessment 1 video recording (opens in a new tab)"
+            className="font-medium text-primary underline underline-offset-4 hover:text-primary-hover"
+          >
+            Watch the Zoom recording
+          </a>{" "}
+          <span className="whitespace-nowrap">
+            (passcode{" "}
+            <code className="rounded bg-surface px-1.5 py-0.5 font-mono text-xs text-foreground">
+              {SITE.demoPasscode}
+            </code>
+            )
+          </span>
+        </p>
+      </section>
+
+      <section className="flex flex-col gap-2">
+        <h2 className="text-lg font-semibold text-foreground">
+          Assessment 2 demo
+        </h2>
+        <p className="text-sm text-muted">Recording coming soon.</p>
+      </section>
 
       <p className="text-sm text-muted">
         Source code:{" "}
@@ -42,24 +54,12 @@ export default function AboutPage() {
           href={SITE.repoUrl}
           target="_blank"
           rel="noopener noreferrer"
-          title="Phoneme Wordle frontend source code on GitHub (opens in a new tab)"
-          aria-label="Phoneme Wordle frontend source code on GitHub (opens in a new tab)"
+          title="Phoneme Wordle source code on GitHub (opens in a new tab)"
+          aria-label="Phoneme Wordle source code on GitHub (opens in a new tab)"
           className="font-medium text-primary underline underline-offset-4 hover:text-primary-hover"
         >
           phoneme-wordle
-        </a>{" "}
-        (frontend) ·{" "}
-        <a
-          href={SITE.apiRepoUrl}
-          target="_blank"
-          rel="noopener noreferrer"
-          title="Phoneme API source code on GitHub (opens in a new tab)"
-          aria-label="Phoneme API source code on GitHub (opens in a new tab)"
-          className="font-medium text-primary underline underline-offset-4 hover:text-primary-hover"
-        >
-          phoneme-api
-        </a>{" "}
-        (backend)
+        </a>
       </p>
     </PageShell>
   );

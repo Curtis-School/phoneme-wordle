@@ -29,7 +29,7 @@ export function describe(error: unknown, type: ActivityType): Loaded<never> {
         ok: false,
         title: "The activity API is not responding",
         message: error.message,
-        hint: "Start it with phoneme-api, then reload this page.",
+        hint: "Start it with `docker compose up` from the repo root (or `npm run dev` in backend/), then reload this page.",
       };
     }
 

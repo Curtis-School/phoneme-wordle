@@ -22,7 +22,7 @@ export default function AboutPage() {
         <p className="text-sm text-muted">
           How-to video:{" "}
           <a
-            href={SITE.demoUrl}
+            href={SITE.demos.assessment1.url}
             target="_blank"
             rel="noopener noreferrer"
             title="Phoneme Wordle Assessment 1 video recording (opens in a new tab)"
@@ -34,7 +34,7 @@ export default function AboutPage() {
           <span className="whitespace-nowrap">
             (passcode{" "}
             <code className="rounded bg-surface px-1.5 py-0.5 font-mono text-xs text-foreground">
-              {SITE.demoPasscode}
+              {SITE.demos.assessment1.passcode}
             </code>
             )
           </span>
@@ -45,7 +45,26 @@ export default function AboutPage() {
         <h2 className="text-lg font-semibold text-foreground">
           Assessment 2 demo
         </h2>
-        <p className="text-sm text-muted">Recording coming soon.</p>
+        <p className="text-sm text-muted">
+          How-to video:{" "}
+          <a
+            href={SITE.demos.assessment2.url}
+            target="_blank"
+            rel="noopener noreferrer"
+            title="Phoneme Wordle Assessment 2 video recording (opens in a new tab)"
+            aria-label="Phoneme Wordle Assessment 2 video recording (opens in a new tab)"
+            className="font-medium text-primary underline underline-offset-4 hover:text-primary-hover"
+          >
+            Watch the Zoom recording
+          </a>{" "}
+          <span className="whitespace-nowrap">
+            (passcode{" "}
+            <code className="rounded bg-surface px-1.5 py-0.5 font-mono text-xs text-foreground">
+              {SITE.demos.assessment2.passcode}
+            </code>
+            )
+          </span>
+        </p>
       </section>
 
       <p className="text-sm text-muted">

@@ -87,7 +87,7 @@ function noTier(difficulty: Difficulty, tiers: WordleActivity[]): Loaded<never> 
     message: `The API has no Wordle activity at ${difficulty} difficulty.`,
     hint: tiers.length
       ? `Available: ${tiers.map((tier) => tier.difficulty).join(", ")}.`
-      : "Seed the database with `npm run db:seed` in phoneme-api.",
+      : "Seed the database with `npm run db:seed` in backend/.",
   };
 }
 

@@ -141,3 +141,51 @@ model Activity {
   @@index([targetPhonemeId])
   @@index([wordId])
 }
+
+// --- Metrics ---
+model ActivityEvent {
+  id           Int      @id @default(autoincrement())
+  /// One of EVENT_KINDS in lib/constants.ts, e.g. "generation_failed".
+  kind         String
+  activityId   Int?
+  /// Copied from the activity at the time, so type usage survives the activity's deletion.
+  activityType String?
+  /// Copied for the same reason: "easy" | "medium" | "hard".
+  difficulty   String?
+  wordListId   Int?
+  /// The Wordle target word drawn by a generation.
+  wordId       Int?
+  /// The API error code when `kind` is "generation_failed", e.g. "UNSATISFIABLE".
+  errorCode    String?
+  /// How long the operation took, where it was timed.
+  durationMs   Int?
+  createdAt    DateTime @default(now())
+
+  @@index([kind, createdAt])
+  @@index([createdAt])
+}
+
+/// Time a visitor spent on one frontend route, reported when they leave it.
+model PageView {
+  id        Int      @id @default(autoincrement())
+  path      String
+  dwellMs   Int
+  /// Anonymous per-tab id, so views from one visit can be grouped.
+  sessionId String?
+  createdAt DateTime @default(now())
+
+  @@index([path])
+  @@index([createdAt])
+}
+
+/// One API request as the server saw it, for latency and error-rate reporting.
+model RequestLog {
+  id         Int      @id @default(autoincrement())
+  method     String
+  path       String
+  status     Int
+  durationMs Int
+  createdAt  DateTime @default(now())
+
+  @@index([createdAt])
+}

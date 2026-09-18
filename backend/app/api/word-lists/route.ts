@@ -9,6 +9,7 @@ import {
   wordListDetailInclude,
   wordListSummaryInclude,
 } from "@/lib/word-lists";
+import { recordEvent } from "@/lib/metrics/record";
 import { wordListCreateSchema, wordListQuerySchema } from "@/lib/validation";
 
 /**
@@ -63,6 +64,8 @@ export const POST = withErrorHandling(async (request: Request) => {
     },
     include: wordListDetailInclude,
   });
+
+  await recordEvent({ kind: "word_list_created", wordListId: list.id });
 
   return created(serializeWordListDetail(list));
 });

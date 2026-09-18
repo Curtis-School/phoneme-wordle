@@ -6,6 +6,7 @@ import {
   serializeActivity,
   toActivityData,
 } from "@/lib/activities";
+import { recordEvent } from "@/lib/metrics/record";
 import { activityCreateSchema, activityQuerySchema } from "@/lib/validation";
 
 /** GET /api/activities — saved configurations, filtered by `?type=`, `?difficulty=`, `?wordListId=`. */
@@ -30,6 +31,14 @@ export const POST = withErrorHandling(async (request: Request) => {
   const activity = await prisma.activity.create({
     data: await toActivityData(input),
     include: activityInclude,
+  });
+
+  await recordEvent({
+    kind: "activity_created",
+    activityId: activity.id,
+    activityType: activity.type,
+    difficulty: activity.difficulty,
+    wordListId: activity.wordListId,
   });
 
   return created(serializeActivity(activity));

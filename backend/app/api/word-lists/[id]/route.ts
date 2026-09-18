@@ -13,6 +13,7 @@ import {
   serializeWordListDetail,
   wordListDetailInclude,
 } from "@/lib/word-lists";
+import { recordEvent } from "@/lib/metrics/record";
 import { readIdParam, wordListUpdateSchema } from "@/lib/validation";
 
 type Context = RouteContext<"/api/word-lists/[id]">;
@@ -70,6 +71,8 @@ export const PATCH = withErrorHandling(async (request: Request, ctx: Context) =>
     });
   });
 
+  await recordEvent({ kind: "word_list_updated", wordListId: id });
+
   return ok(serializeWordListDetail(list));
 });
 
@@ -94,6 +97,8 @@ export const DELETE = withErrorHandling(async (_request: Request, ctx: Context) 
   }
 
   await prisma.wordList.delete({ where: { id } });
+
+  await recordEvent({ kind: "word_list_deleted", wordListId: id });
 
   return noContent();
 });

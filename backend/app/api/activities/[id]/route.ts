@@ -7,6 +7,7 @@ import {
   toActivityData,
   toCreateInput,
 } from "@/lib/activities";
+import { recordEvent } from "@/lib/metrics/record";
 import {
   activityCreateSchema,
   activityUpdateSchema,
@@ -57,6 +58,14 @@ export const PATCH = withErrorHandling(async (request: Request, ctx: Context) =>
     include: activityInclude,
   });
 
+  await recordEvent({
+    kind: "activity_updated",
+    activityId: activity.id,
+    activityType: activity.type,
+    difficulty: activity.difficulty,
+    wordListId: activity.wordListId,
+  });
+
   return ok(serializeActivity(activity));
 });
 
@@ -64,9 +73,11 @@ export const PATCH = withErrorHandling(async (request: Request, ctx: Context) =>
 export const DELETE = withErrorHandling(async (_request: Request, ctx: Context) => {
   const id = await readIdParam(ctx.params);
 
+  // Read before the delete: the event copies this context so reports stay correct once
+  // the row itself is gone.
   const activity = await prisma.activity.findUnique({
     where: { id },
-    select: { id: true },
+    select: { id: true, type: true, difficulty: true, wordListId: true },
   });
 
   if (!activity) {
@@ -74,6 +85,14 @@ export const DELETE = withErrorHandling(async (_request: Request, ctx: Context) 
   }
 
   await prisma.activity.delete({ where: { id } });
+
+  await recordEvent({
+    kind: "activity_deleted",
+    activityId: activity.id,
+    activityType: activity.type,
+    difficulty: activity.difficulty,
+    wordListId: activity.wordListId,
+  });
 
   return noContent();
 });

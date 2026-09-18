@@ -14,12 +14,9 @@ type LoadedActivity = Awaited<ReturnType<typeof loadActivityForGenerate>>;
 /**
  * GET /api/activities/:id/generate
  *
- * Turns a saved activity into everything the builder needs to render and export it. The
- * `config` object matches the frontend's `WordleConfig` / `WordSearchConfig` exactly, so
- * it can be handed to the existing components and HTML exporters unchanged.
+ * Turns a saved activity into everything the builder needs to render and export it.
  *
- * Repeated calls produce fresh puzzles. The activity itself is never written to, but each
- * attempt is logged as an event so the dashboard can report generation volume and
+ * Repeated calls produce fresh puzzles. Still log as an event so the dashboard can report generation volume and
  * failures.
  */
 export const GET = withErrorHandling(async (request: Request, ctx: Context) => {

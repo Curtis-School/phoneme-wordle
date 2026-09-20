@@ -229,11 +229,6 @@ const HEALTH_TIMEOUT_MS = 2000;
 
 /**
  * Checks the API's health without throwing.
- *
- * Deliberately not built on `request()`: a health check must report a failure as data
- * rather than raise it, it has to read the body of a 503 (which `request()` turns into an
- * error), and it needs a short timeout so a hung API cannot hold up the page that is
- * trying to report it as down.
  */
 export async function getApiHealth(): Promise<ApiHealthReport> {
   const startedAt = Date.now();

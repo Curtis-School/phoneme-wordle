@@ -168,13 +168,6 @@ export type ApiHealth = {
   uptime: number;
 };
 
-/**
- * What the frontend could learn about the API's health.
- *
- * "unreachable" means the request itself failed — the API is down, or the wrong
- * `API_BASE_URL` is configured. "error" means it answered but reported a problem, which
- * in practice means it cannot reach its database.
- */
 export type ApiHealthReport =
   | { status: "ok"; health: ApiHealth; latencyMs: number }
   | { status: "error"; health: ApiHealth; latencyMs: number }

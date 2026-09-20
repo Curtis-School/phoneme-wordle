@@ -6,12 +6,15 @@ import type {
   ActivityType,
   ApiErrorBody,
   ApiErrorCode,
+  ApiHealth,
+  ApiHealthReport,
   ApiPhoneme,
   ApiWord,
   ApiWordListDetail,
   ApiWordListSummary,
   CreateActivityInput,
   GenerateResponse,
+  MetricsSummary,
   UpdateActivityInput,
 } from "./types";
 
@@ -214,4 +217,43 @@ export async function setWordListWords(
 /** Deletes a word list. `409 IN_USE` while an activity still points at it. */
 export async function deleteWordList(id: number): Promise<void> {
   await request<void>(`/api/word-lists/${id}`, { method: "DELETE" });
+}
+
+/** Every figure in the dashboard's KPI block, aggregated by the API from its event log. */
+export async function getMetricsSummary(): Promise<MetricsSummary> {
+  return request<MetricsSummary>("/api/metrics/summary");
+}
+
+/** How long to wait for the API's health check before calling it unreachable. */
+const HEALTH_TIMEOUT_MS = 2000;
+
+/**
+ * Checks the API's health without throwing.
+ */
+export async function getApiHealth(): Promise<ApiHealthReport> {
+  const startedAt = Date.now();
+
+  try {
+    const response = await fetch(`${baseUrl()}/health`, {
+      cache: "no-store",
+      signal: AbortSignal.timeout(HEALTH_TIMEOUT_MS),
+    });
+
+    const health = (await response.json()) as ApiHealth;
+
+    return {
+      status: response.ok ? "ok" : "error",
+      health,
+      latencyMs: Date.now() - startedAt,
+    };
+  } catch (cause) {
+    return {
+      status: "unreachable",
+      message:
+        cause instanceof Error && cause.name === "TimeoutError"
+          ? `The activity API at ${baseUrl()} did not respond within ${HEALTH_TIMEOUT_MS}ms.`
+          : `Could not reach the activity API at ${baseUrl()}.`,
+      latencyMs: Date.now() - startedAt,
+    };
+  }
 }

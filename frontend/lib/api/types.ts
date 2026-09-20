@@ -122,6 +122,64 @@ export type WordSearchGenerateResponse = {
 
 export type GenerateResponse = WordleGenerateResponse | WordSearchGenerateResponse;
 
+/** Counts that always carry both activity types, so a card can read "0" rather than nothing. */
+export type ActivityTypeCounts = Record<ActivityType, number>;
+
+/** `GET /api/metrics/summary` — every figure in the dashboard's KPI block. */
+export type MetricsSummary = {
+  generatedAt: string;
+  activities: {
+    /** Saved right now. Differs from `created` by design — seeded rows were never created through the API. */
+    stored: number;
+    storedByType: ActivityTypeCounts;
+    created: number;
+    updated: number;
+    deleted: number;
+    mostUsedType: ActivityType | null;
+  };
+  generations: {
+    succeeded: number;
+    failed: number;
+    attempts: number;
+    /** Percentage to one decimal place, or null before anything has been generated. */
+    successRate: number | null;
+    byType: ActivityTypeCounts;
+    averageDurationMs: number | null;
+  };
+  library: {
+    wordLists: number;
+    words: number;
+    phonemes: number;
+    emptyWordLists: number;
+  };
+  events: {
+    total: number;
+    byKind: Record<string, number>;
+    lastEventAt: string | null;
+  };
+};
+
+/** `GET /health` on the API. */
+export type ApiHealth = {
+  service: string;
+  status: "ok" | "error";
+  database: "connected" | "unavailable";
+  timestamp: string;
+  uptime: number;
+};
+
+/**
+ * What the frontend could learn about the API's health.
+ *
+ * "unreachable" means the request itself failed — the API is down, or the wrong
+ * `API_BASE_URL` is configured. "error" means it answered but reported a problem, which
+ * in practice means it cannot reach its database.
+ */
+export type ApiHealthReport =
+  | { status: "ok"; health: ApiHealth; latencyMs: number }
+  | { status: "error"; health: ApiHealth; latencyMs: number }
+  | { status: "unreachable"; message: string; latencyMs: number };
+
 export type ApiErrorCode =
   | "VALIDATION_ERROR"
   | "INVALID_JSON"

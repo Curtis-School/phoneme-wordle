@@ -3,6 +3,7 @@ import { Geist, Geist_Mono, Noto_Sans } from "next/font/google";
 import "./globals.css";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
+import { TimeOnPage } from "@/components/analytics/TimeOnPage";
 import { getTheme } from "@/lib/settings-cookie";
 
 const geistSans = Geist({
@@ -45,6 +46,7 @@ export default async function RootLayout({
           {children}
         </main>
         <Footer />
+        <TimeOnPage />
       </body>
     </html>
   );

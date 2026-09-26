@@ -152,6 +152,11 @@ export type MetricsSummary = {
     phonemes: number;
     emptyWordLists: number;
   };
+  engagement: {
+    pageViews: number;
+    averageTimeOnPageMs: number | null;
+    byPath: { path: string; views: number; averageMs: number }[];
+  };
   events: {
     total: number;
     byKind: Record<string, number>;

@@ -193,8 +193,10 @@ export async function listWordLists(
 export async function createWordList(input: {
   name: string;
   description?: string;
-  targetPhoneme: string;
-  words: string[];
+  /** Omit for a list that is not built around one sound. */
+  targetPhoneme?: string;
+  /** Omit to create the list empty and fill it later. */
+  words?: string[];
 }): Promise<ApiWordListDetail> {
   return request<ApiWordListDetail>("/api/word-lists", { method: "POST", body: input });
 }

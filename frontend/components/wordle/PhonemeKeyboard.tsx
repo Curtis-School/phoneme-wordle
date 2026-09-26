@@ -25,7 +25,11 @@ export function PhonemeKeyboard({
 }: PhonemeKeyboardProps) {
   return (
     <div className="flex w-full flex-col items-center gap-2">
-      <div className="grid w-full max-w-sm grid-cols-4 gap-2 self-stretch sm:w-auto sm:max-w-none sm:grid-cols-6 sm:self-center">
+      <div
+        role="group"
+        aria-label="Phoneme keys"
+        className="grid w-full max-w-sm grid-cols-4 gap-2 self-stretch sm:w-auto sm:max-w-none sm:grid-cols-6 sm:self-center"
+      >
         {keys.map((phoneme) => (
           <button
             key={phoneme.ipa}

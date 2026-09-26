@@ -243,6 +243,14 @@ export async function getRecentEvents(
   return request<RecentEvents>("/api/metrics/events", { query: params });
 }
 
+export async function recordPageView(input: {
+  path: string;
+  dwellMs: number;
+  sessionId?: string;
+}): Promise<void> {
+  await request<unknown>("/api/page-views", { method: "POST", body: input });
+}
+
 /** How long to wait for the API's health check before calling it unreachable. */
 const HEALTH_TIMEOUT_MS = 2000;
 

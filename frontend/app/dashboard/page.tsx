@@ -187,8 +187,18 @@ function Charts({ timeseries }: { timeseries: MetricsTimeseries }) {
   );
 }
 
+function formatDuration(ms: number | null): string {
+  if (ms === null) return "—";
+  if (ms < 60_000) return `${(ms / 1000).toFixed(1)}s`;
+
+  const seconds = Math.round(ms / 1000);
+
+  return `${Math.floor(seconds / 60)}m ${String(seconds % 60).padStart(2, "0")}s`;
+}
+
 function Metrics({ summary }: { summary: MetricsSummary }) {
-  const { activities, generations, library, events } = summary;
+  const { activities, generations, library, engagement, events } = summary;
+  const busiest = engagement.byPath[0];
 
   return (
     <div className="flex flex-col gap-8">
@@ -251,6 +261,28 @@ function Metrics({ summary }: { summary: MetricsSummary }) {
           label="Phonemes"
           value={formatCount(library.phonemes)}
           hint="Australian English inventory"
+        />
+      </Section>
+
+      <Section id="engagement" title="Engagement">
+        <StatCard
+          label="Average time on page"
+          value={formatDuration(engagement.averageTimeOnPageMs)}
+          hint="Across every tracked route"
+        />
+        <StatCard
+          label="Page views"
+          value={formatCount(engagement.pageViews)}
+          hint="Recorded when a visitor leaves a page"
+        />
+        <StatCard
+          label="Busiest page"
+          value={busiest ? busiest.path : "—"}
+          hint={
+            busiest
+              ? `${formatCount(busiest.views)} views · ${formatDuration(busiest.averageMs)} average`
+              : "No page views recorded yet"
+          }
         />
       </Section>
 

@@ -159,6 +159,22 @@ export type MetricsSummary = {
   };
 };
 
+export type TimeseriesPoint = {
+  date: string;
+  activitiesCreated: number;
+  generationsSucceeded: number;
+  generationsFailed: number;
+  pageViews: number;
+};
+
+export type MetricsTimeseries = {
+  from: string;
+  to: string;
+  days: number;
+  timezone: string;
+  points: TimeseriesPoint[];
+};
+
 /** `GET /health` on the API. */
 export type ApiHealth = {
   service: string;

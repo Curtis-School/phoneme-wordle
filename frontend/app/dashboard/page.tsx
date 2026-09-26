@@ -1,9 +1,19 @@
+import { DailyChart } from "@/components/dashboard/DailyChart";
 import { HealthTile } from "@/components/dashboard/HealthTile";
 import { StatCard } from "@/components/dashboard/StatCard";
 import { ApiErrorNotice } from "@/components/ui/ApiErrorNotice";
 import { PageShell } from "@/components/ui/PageShell";
-import { ApiClientError, getApiHealth, getMetricsSummary } from "@/lib/api/client";
-import type { ActivityType, MetricsSummary } from "@/lib/api/types";
+import {
+  ApiClientError,
+  getApiHealth,
+  getMetricsSummary,
+  getTimeseries,
+} from "@/lib/api/client";
+import type {
+  ActivityType,
+  MetricsSummary,
+  MetricsTimeseries,
+} from "@/lib/api/types";
 
 export const dynamic = "force-dynamic";
 
@@ -60,12 +70,26 @@ async function loadSummary(): Promise<SummaryResult> {
   }
 }
 
+async function loadTimeseries(): Promise<MetricsTimeseries | null> {
+  try {
+    return await getTimeseries(30);
+  } catch {
+    return null;
+  }
+}
+
 export default async function DashboardPage() {
-  const [health, result] = await Promise.all([getApiHealth(), loadSummary()]);
+  const [health, result, timeseries] = await Promise.all([
+    getApiHealth(),
+    loadSummary(),
+    loadTimeseries(),
+  ]);
 
   return (
     <PageShell title="Dashboard" intro={INTRO}>
       <HealthTile report={health} />
+
+      {timeseries ? <Charts timeseries={timeseries} /> : null}
 
       {result.ok ? (
         <Metrics summary={result.summary} />
@@ -77,6 +101,49 @@ export default async function DashboardPage() {
         />
       )}
     </PageShell>
+  );
+}
+
+function Charts({ timeseries }: { timeseries: MetricsTimeseries }) {
+  return (
+    <section aria-labelledby="trends-heading" className="flex flex-col gap-3">
+      <h2
+        id="trends-heading"
+        className="text-sm font-semibold uppercase tracking-wide text-muted"
+      >
+        Daily trend
+      </h2>
+      <div className="grid gap-4 lg:grid-cols-2">
+        <DailyChart
+          id="activities-chart"
+          title="Activities created"
+          points={timeseries.points}
+          series={[
+            {
+              key: "activitiesCreated",
+              label: "Created",
+              color: "var(--chart-succeeded)",
+            },
+          ]}
+        />
+        <DailyChart
+          id="generations-chart"
+          title="Puzzles generated"
+          points={timeseries.points}
+          series={[
+            {
+              key: "generationsSucceeded",
+              label: "Succeeded",
+              color: "var(--chart-succeeded)",
+            },
+            { key: "generationsFailed", label: "Failed", color: "var(--chart-failed)" },
+          ]}
+        />
+      </div>
+      <p className="text-xs text-muted">
+        Days are UTC, matching the API&apos;s own buckets.
+      </p>
+    </section>
   );
 }
 

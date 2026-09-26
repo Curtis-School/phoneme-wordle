@@ -18,6 +18,8 @@
   --present-foreground: #ffffff;
   --absent: #6b7d72;
   --absent-foreground: #ffffff;
+  --chart-succeeded: #2f855a;
+  --chart-failed: #a8620a;
   color-scheme: light;
 }
 
@@ -38,6 +40,8 @@
   --present-foreground: #1a1200;
   --absent: #3a4a40;
   --absent-foreground: #cfe0d4;
+  --chart-succeeded: #3aa46e;
+  --chart-failed: #a8761f;
   color-scheme: dark;
 }
 
@@ -58,6 +62,8 @@
   --color-present-foreground: var(--present-foreground);
   --color-absent: var(--absent);
   --color-absent-foreground: var(--absent-foreground);
+  --color-chart-succeeded: var(--chart-succeeded);
+  --color-chart-failed: var(--chart-failed);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }

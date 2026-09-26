@@ -270,7 +270,8 @@ export function WordSearchGame({
                         cursor.row === rowIndex && cursor.col === colIndex ? 0 : -1
                       }
                       aria-selected={isSelected}
-                      aria-label={`${phonemeHint(cell)}, row ${rowIndex + 1}, column ${colIndex + 1}`}
+                      // The symbol leads, so the accessible name contains the tile's visible text.
+                      aria-label={`${cell.ipa} ${phonemeHint(cell)}, row ${rowIndex + 1}, column ${colIndex + 1}`}
                       onFocus={() => setCursor({ row: rowIndex, col: colIndex })}
                       onKeyDown={(event) =>
                         handleKeyDown(event, { row: rowIndex, col: colIndex })

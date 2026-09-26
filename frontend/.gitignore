@@ -45,3 +45,6 @@ next-env.d.ts
 .claude
 AGENTS.md
 CLAUDE.md
+
+# playwright (reports live at the repo root)
+/playwright/.cache

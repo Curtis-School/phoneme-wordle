@@ -3,3 +3,9 @@
 .env
 .env.*
 !.env.example
+/node_modules
+
+# playwright output
+/test-results
+/playwright-report
+/blob-report

@@ -1,0 +1,21 @@
+{
+  "name": "phoneme",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Monorepo root: forwards the common commands to frontend/ and backend/ so everything runs from here, next to docker-compose.yml.",
+  "scripts": {
+    "install:all": "npm install --prefix backend && npm install --prefix frontend",
+    "dev:api": "npm run dev --prefix backend",
+    "dev:web": "npm run dev --prefix frontend",
+    "build": "npm run build --prefix backend && npm run build --prefix frontend",
+    "lint": "npm run lint --prefix backend && npm run lint --prefix frontend",
+    "test:e2e": "npm run test:e2e --prefix frontend",
+    "test:e2e:ui": "npm run test:e2e:ui --prefix frontend",
+    "db:migrate": "npm run db:migrate --prefix backend",
+    "db:deploy": "npm run db:deploy --prefix backend",
+    "db:seed": "npm run db:seed --prefix backend",
+    "db:seed:events": "npm run db:seed:events --prefix backend",
+    "db:reset": "npm run db:reset --prefix backend",
+    "db:studio": "npm run db:studio --prefix backend"
+  }
+}

@@ -14,6 +14,7 @@ import { readFileSync } from "node:fs";
 import { PrismaBetterSqlite3 } from "@prisma/adapter-better-sqlite3";
 import { PrismaClient } from "../lib/generated/prisma/client";
 import { DIFFICULTIES, type Difficulty } from "../lib/constants";
+import { seedSimulatedHistory } from "./simulated-history";
 
 type SourcePhoneme = {
   ipa: string;
@@ -370,6 +371,15 @@ async function main() {
     wordListItems,
     activities,
   });
+
+  // Opt-in: the metrics history is demo data, so a plain seed leaves the log empty and
+  // the dashboard reports only what has actually happened.
+  if (process.argv.includes("--events")) {
+    const history = await seedSimulatedHistory(prisma);
+
+    console.log("Simulated 30 days of usage:");
+    console.table(history);
+  }
 }
 
 main()

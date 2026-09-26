@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { Prisma } from "@/lib/generated/prisma/client";
+import { recordRequest } from "@/lib/metrics/request-log";
 
 /**
  * Shared response envelope and error mapping for every route handler.
@@ -124,11 +125,29 @@ export function withErrorHandling<Args extends unknown[]>(
   handler: (...args: Args) => Promise<Response>,
 ) {
   return async (...args: Args): Promise<Response> => {
+    const startedAt = Date.now();
+    let response: Response;
+
     try {
-      return await handler(...args);
+      response = await handler(...args);
     } catch (error) {
-      return toErrorResponse(error);
+      response = toErrorResponse(error);
     }
+
+    // Logging lives here rather than in middleware.ts: that runs on the Edge runtime,
+    // which cannot reach Prisma, and it never sees the response status either.
+    const [request] = args;
+
+    if (request instanceof Request) {
+      await recordRequest({
+        method: request.method,
+        path: new URL(request.url).pathname,
+        status: response.status,
+        durationMs: Date.now() - startedAt,
+      });
+    }
+
+    return response;
   };
 }
 

@@ -1,13 +1,6 @@
 import { AlertCircleIcon, CheckIcon } from "@/lib/icons";
 import type { ApiHealthReport } from "@/lib/api/types";
 
-/**
- * Live health of the API the dashboard reads from.
- *
- * Status is carried by an icon and a word as well as colour, so it survives both a
- * greyscale print and a colour-vision deficiency — the same rule the alerts panel follows.
- */
-
 type Presentation = {
   label: string;
   detail: string;
@@ -34,7 +27,6 @@ function present(report: ApiHealthReport): Presentation {
   };
 }
 
-/** Seconds as "45s", "12m 05s" or "3h 07m" — whichever is readable at that scale. */
 function formatUptime(seconds: number): string {
   if (seconds < 60) return `${seconds}s`;
 
@@ -51,8 +43,6 @@ export function HealthTile({ report }: { report: ApiHealthReport }) {
   return (
     <section
       aria-labelledby="health-heading"
-      // A failing check is an alert; a passing one is just status, and announcing it on
-      // every load would be noise.
       role={healthy ? undefined : "alert"}
       className={`flex items-start gap-4 rounded-2xl border p-5 ${
         healthy ? "border-border bg-surface" : "border-present bg-surface"

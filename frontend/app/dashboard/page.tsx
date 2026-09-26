@@ -5,13 +5,6 @@ import { PageShell } from "@/components/ui/PageShell";
 import { ApiClientError, getApiHealth, getMetricsSummary } from "@/lib/api/client";
 import type { ActivityType, MetricsSummary } from "@/lib/api/types";
 
-/**
- * Operational view of the builder: is it healthy, what has been built, and what has been
- * generated from it.
- *
- * Rendered per request. Every figure is read from the API's event log, so a cached page
- * would report the past while claiming to report the present.
- */
 export const dynamic = "force-dynamic";
 
 const INTRO =
@@ -27,8 +20,6 @@ const numbers = new Intl.NumberFormat("en-AU");
 function formatCount(value: number): string {
   return numbers.format(value);
 }
-
-/** Splits a per-type tally into one readable line: "9 Wordle · 5 Word Search". */
 function splitByType(counts: Record<ActivityType, number>): string {
   return (Object.keys(TYPE_LABELS) as ActivityType[])
     .map((type) => `${formatCount(counts[type] ?? 0)} ${TYPE_LABELS[type]}`)
@@ -43,11 +34,7 @@ type SummaryResult =
   | { ok: true; summary: MetricsSummary }
   | { ok: false; title: string; message: string; hint?: string };
 
-/**
- * The dashboard must still render when the API is down — a monitoring page that dies with
- * the thing it monitors is worse than useless, since the health tile is exactly what a
- * reader needs at that moment.
- */
+
 async function loadSummary(): Promise<SummaryResult> {
   try {
     return { ok: true, summary: await getMetricsSummary() };
@@ -74,8 +61,6 @@ async function loadSummary(): Promise<SummaryResult> {
 }
 
 export default async function DashboardPage() {
-  // Both are independent reads, and the health tile is most valuable precisely when the
-  // metrics call is the one that failed.
   const [health, result] = await Promise.all([getApiHealth(), loadSummary()]);
 
   return (

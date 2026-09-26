@@ -27,6 +27,7 @@ export const PRIMARY_LINKS: readonly NavLink[] = [
   { href: "/wordle", label: "Wordle" },
   { href: "/word-search", label: "Word Search" },
   { href: "/dashboard", label: "Dashboard" },
+  { href: "/library", label: "Library" },
 ] as const;
 
 export const SECONDARY_LINKS: readonly NavLink[] = [

@@ -10,7 +10,8 @@ import type { Phoneme, SymbolDisplay } from "@/lib/types";
 /** What the built word has to satisfy: an exact sound count, or a sound it must contain. */
 export type WordRequirement =
   | { kind: "length"; wordLength: number }
-  | { kind: "contains"; phoneme: Phoneme; maxSounds: number };
+  | { kind: "contains"; phoneme: Phoneme; maxSounds: number }
+  | { kind: "any"; maxSounds: number };
 
 type WordBuilderProps = {
   inventory: readonly Phoneme[];
@@ -28,7 +29,13 @@ function hint(requirement: WordRequirement, count: number): string {
   }
 
   if (count > requirement.maxSounds) {
-    return `${count} sounds — the grid only fits ${requirement.maxSounds}.`;
+    return requirement.kind === "contains"
+      ? `${count} sounds — the grid only fits ${requirement.maxSounds}.`
+      : `${count} sounds — the limit is ${requirement.maxSounds}.`;
+  }
+
+  if (requirement.kind === "any") {
+    return "Check the sounds below, then save.";
   }
 
   return `No ${requirement.phoneme.ipa} yet — the word must contain the target sound.`;
@@ -62,12 +69,17 @@ export function WordBuilder({
   const sounds = draft.map((sound, index) => overrides[index] ?? sound.phoneme);
 
   const unresolved = sounds.some((phoneme) => phoneme === null);
+  const withinLimit =
+    requirement.kind !== "length" &&
+    sounds.length > 0 &&
+    sounds.length <= requirement.maxSounds;
   const meetsRequirement =
     requirement.kind === "length"
       ? sounds.length === requirement.wordLength
-      : sounds.length > 0 &&
-        sounds.length <= requirement.maxSounds &&
-        sounds.some((phoneme) => phoneme?.ipa === requirement.phoneme.ipa);
+      : requirement.kind === "any"
+        ? withinLimit
+        : withinLimit &&
+          sounds.some((phoneme) => phoneme?.ipa === requirement.phoneme.ipa);
   const ready = meetsRequirement && !unresolved && spelling.trim().length > 0;
 
   function retype(next: string) {
@@ -104,7 +116,9 @@ export function WordBuilder({
         placeholder={
           requirement.kind === "length"
             ? `Type a ${requirement.wordLength}-sound word`
-            : `Type a word with ${requirement.phoneme.ipa} in it`
+            : requirement.kind === "any"
+              ? "Type a word to add"
+              : `Type a word with ${requirement.phoneme.ipa} in it`
         }
         className={TEXT_INPUT}
       />

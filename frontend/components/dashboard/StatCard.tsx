@@ -3,16 +3,9 @@ import type { ReactNode } from "react";
 type StatCardProps = {
   label: string;
   value: ReactNode;
-  /** One line of context under the figure — what it counts, or how it is split. */
   hint?: string;
 };
 
-/**
- * One KPI figure.
- *
- * The label is rendered above the value but marked up as a `<dt>`/`<dd>` pair, so a
- * screen reader reads "Activities stored, 14" rather than two unrelated numbers.
- */
 export function StatCard({ label, value, hint }: StatCardProps) {
   return (
     <div className="flex flex-col rounded-2xl border border-border bg-surface p-5">

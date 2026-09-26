@@ -4,6 +4,9 @@
 .env.*
 !.env.example
 /node_modules
+# The root package.json only forwards scripts and has no dependencies, so a lockfile
+# here adds nothing and makes Next guess this folder is the workspace root.
+/package-lock.json
 
 # playwright output
 /test-results

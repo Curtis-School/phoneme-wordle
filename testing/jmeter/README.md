@@ -35,5 +35,3 @@ Each tier writes `results/tier-<n>.jtl` (raw samples) and `results/tier-<n>-repo
 | `GET /api/activities` | The most common read |
 | `GET /api/metrics/summary` | The heaviest read — nine aggregates in one request |
 | `GET /api/activities/:id/generate` | The only write path: it records an event and a request log row |
-
-See `results.md` for the measured numbers and what they show.

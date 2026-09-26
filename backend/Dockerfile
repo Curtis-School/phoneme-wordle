@@ -48,8 +48,11 @@
     RUN mkdir -p /app/data
     ENV DATABASE_URL="file:/app/data/phoneme.db"
 
+    COPY --from=builder /app/docker-entrypoint.sh ./
+    RUN chmod +x ./docker-entrypoint.sh
+
     ENTRYPOINT ["/sbin/tini", "--"]
 
     EXPOSE 3001
 
-    CMD ["sh", "-c", "npx prisma migrate deploy && npx prisma db seed && npm start"]
+    CMD ["./docker-entrypoint.sh"]

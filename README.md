@@ -26,21 +26,27 @@ survive restarts. `docker compose down -v` discards it and starts fresh next tim
 
 ## Local development (no Docker)
 
-Two terminals:
+Every command below runs from the repo root — the root `package.json` forwards each one
+to `frontend/` or `backend/`.
 
 ```bash
-# 1. API — http://localhost:3001
-cd backend
-npm install
-cp .env.example .env
+npm run install:all
+cp backend/.env.example backend/.env
+cp frontend/.env.example frontend/.env.local   # API_BASE_URL=http://localhost:3001
 npm run db:migrate && npm run db:seed
-npm run dev
 ```
 
+Then a terminal each:
+
 ```bash
-# 2. Frontend — http://localhost:3000
-cd frontend
-npm install
-cp .env.example .env.local   # API_BASE_URL=http://localhost:3001
-npm run dev
+npm run dev:api   # http://localhost:3001
+npm run dev:web   # http://localhost:3000
 ```
+
+| Command | What it does |
+| --- | --- |
+| `npm run db:seed` | Phonemes, words, word lists and starter activities |
+| `npm run db:seed:events` | Adds 30 days of simulated usage for the dashboard |
+| `npm run db:studio` | Browse the database |
+| `npm run test:e2e` | Playwright end-to-end tests (starts both servers itself) |
+| `npm run lint` | Lints both apps |

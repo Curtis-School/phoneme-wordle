@@ -11,6 +11,7 @@
     "lint": "npm run lint --prefix backend && npm run lint --prefix frontend",
     "test:e2e": "npm run test:e2e --prefix frontend",
     "test:e2e:ui": "npm run test:e2e:ui --prefix frontend",
+    "test:load": "cd testing/jmeter && ./run.sh",
     "db:migrate": "npm run db:migrate --prefix backend",
     "db:deploy": "npm run db:deploy --prefix backend",
     "db:seed": "npm run db:seed --prefix backend",

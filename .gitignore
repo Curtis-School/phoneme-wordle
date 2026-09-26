@@ -12,3 +12,6 @@
 /test-results
 /playwright-report
 /blob-report
+
+# jmeter output (demo evidence, not source)
+/testing/jmeter/results/

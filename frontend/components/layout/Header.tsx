@@ -9,7 +9,6 @@ export function Header() {
         <Link
           href="/"
           className="flex items-center gap-3 rounded-lg"
-          aria-label={`${SITE.title} — home`}
         >
           <span
             aria-hidden="true"

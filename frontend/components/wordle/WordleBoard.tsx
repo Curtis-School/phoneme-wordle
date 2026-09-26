@@ -46,17 +46,18 @@ export function WordleBoard({
       {guesses.map((guess, rowIndex) => (
         <div role="row" key={`guess-${rowIndex}`} className="flex gap-1.5">
           {guess.map((tile, colIndex) => (
-            <PhonemeTile
-              key={colIndex}
-              label={tile.symbol}
-              reveal={tile.reveal}
-              hint={tile.hint}
-              tone={tile.state}
-              display={display}
-              showTooltip={showTooltip}
-              revealed={solvedRow === rowIndex}
-              size="lg"
-            />
+            <div role="gridcell" key={colIndex}>
+              <PhonemeTile
+                label={tile.symbol}
+                reveal={tile.reveal}
+                hint={tile.hint}
+                tone={tile.state}
+                display={display}
+                showTooltip={showTooltip}
+                revealed={solvedRow === rowIndex}
+                size="lg"
+              />
+            </div>
           ))}
         </div>
       ))}
@@ -66,16 +67,17 @@ export function WordleBoard({
           {Array.from({ length }).map((_, colIndex) => {
             const tile = current[colIndex];
             return (
-              <PhonemeTile
-                key={colIndex}
-                label={tile?.symbol}
-                reveal={tile?.reveal}
-                hint={tile?.hint}
-                tone="default"
-                display={display}
-                showTooltip={showTooltip}
-                size="lg"
-              />
+              <div role="gridcell" key={colIndex}>
+                <PhonemeTile
+                  label={tile?.symbol}
+                  reveal={tile?.reveal}
+                  hint={tile?.hint}
+                  tone="default"
+                  display={display}
+                  showTooltip={showTooltip}
+                  size="lg"
+                />
+              </div>
             );
           })}
         </div>
@@ -84,7 +86,9 @@ export function WordleBoard({
       {Array.from({ length: emptyRows }).map((_, rowIndex) => (
         <div role="row" key={`empty-${rowIndex}`} className="flex gap-1.5">
           {Array.from({ length }).map((_, colIndex) => (
-            <PhonemeTile key={colIndex} tone="default" size="lg" />
+            <div role="gridcell" key={colIndex}>
+              <PhonemeTile tone="default" size="lg" />
+            </div>
           ))}
         </div>
       ))}

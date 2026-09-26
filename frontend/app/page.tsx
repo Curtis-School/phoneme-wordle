@@ -4,7 +4,7 @@ export default function Home() {
   return (
     <div className="flex flex-col items-center gap-12 py-6 text-center">
       <section className="flex flex-col items-center gap-4">
-        <span className="inline-flex items-center rounded-full bg-surface-muted px-3 py-1 text-xs font-medium text-primary">
+        <span className="inline-flex items-center rounded-full bg-surface-muted px-3 py-1 text-xs font-medium text-primary-hover">
           Speech Pathology · Phoneme activities
         </span>
         <h1 className="max-w-2xl text-3xl font-bold leading-tight tracking-tight text-foreground sm:text-4xl">

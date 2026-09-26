@@ -56,7 +56,7 @@ export default async function WordSearchPage({
       <div className="flex min-h-18 items-center gap-3.5 rounded-2xl border border-border bg-surface px-3.5 py-3">
         <span className="flex size-12 shrink-0 flex-col items-center justify-center rounded-xl bg-primary leading-none text-on-primary">
           <span className="text-base font-bold">{phoneme.label}</span>
-          <span className="mt-0.5 text-[0.625rem] opacity-85">
+          <span className="mt-0.5 text-[0.625rem]">
             {phoneme.ipa}
           </span>
         </span>

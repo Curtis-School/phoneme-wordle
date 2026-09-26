@@ -1,7 +1,7 @@
 import { expect, test, type Page } from "@playwright/test";
 
 /**
- * The builder use case the brief asks for: a word list created, read, edited and deleted
+ * Library route: a word list created, read, edited and deleted
  * through the UI, with every step checked against what the API stored.
  */
 

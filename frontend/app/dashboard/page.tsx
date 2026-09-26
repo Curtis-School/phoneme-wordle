@@ -197,7 +197,7 @@ function formatDuration(ms: number | null): string {
 }
 
 function Metrics({ summary }: { summary: MetricsSummary }) {
-  const { activities, generations, library, engagement, events } = summary;
+  const { activities, generations, library, requests, engagement, events } = summary;
   const busiest = engagement.byPath[0];
 
   return (
@@ -261,6 +261,28 @@ function Metrics({ summary }: { summary: MetricsSummary }) {
           label="Phonemes"
           value={formatCount(library.phonemes)}
           hint="Australian English inventory"
+        />
+      </Section>
+
+      <Section id="requests" title="API traffic">
+        <StatCard
+          label="Requests handled"
+          value={formatCount(requests.total)}
+          hint={`${formatCount(requests.errors)} returned an error`}
+        />
+        <StatCard
+          label="Error rate"
+          value={requests.errorRate === null ? "—" : `${requests.errorRate}%`}
+          hint="Responses of 400 or above"
+        />
+        <StatCard
+          label="Response time"
+          value={requests.p95DurationMs === null ? "—" : `${requests.p95DurationMs}ms`}
+          hint={
+            requests.p50DurationMs === null
+              ? "Nothing logged yet"
+              : `95th percentile · median ${requests.p50DurationMs}ms`
+          }
         />
       </Section>
 

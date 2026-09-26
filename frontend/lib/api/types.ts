@@ -152,6 +152,14 @@ export type MetricsSummary = {
     phonemes: number;
     emptyWordLists: number;
   };
+  requests: {
+    total: number;
+    errors: number;
+    /** Percentage to one decimal place, or null before any request was logged. */
+    errorRate: number | null;
+    p50DurationMs: number | null;
+    p95DurationMs: number | null;
+  };
   engagement: {
     pageViews: number;
     averageTimeOnPageMs: number | null;

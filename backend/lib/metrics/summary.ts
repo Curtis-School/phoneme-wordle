@@ -47,6 +47,23 @@ function mostUsed(counts: Tally): string | null {
   return ranked[0]?.[0] ?? null;
 }
 
+/**
+ * Reads a latency percentile by offset rather than loading the rows and sorting them in
+ * JS, so the work stays in the database as the request log grows.
+ */
+async function percentile(total: number, fraction: number): Promise<number | null> {
+  if (total === 0) return null;
+
+  const [row] = await prisma.requestLog.findMany({
+    orderBy: { durationMs: "asc" },
+    skip: Math.min(total - 1, Math.floor((total - 1) * fraction)),
+    take: 1,
+    select: { durationMs: true },
+  });
+
+  return row?.durationMs ?? null;
+}
+
 function round(value: number | null): number | null {
   return value === null ? null : Math.round(value);
 }
@@ -64,6 +81,8 @@ export async function buildSummary() {
     lastEvent,
     pageViewTotals,
     pageViewsByPath,
+    requestTotal,
+    requestErrors,
   ] = await Promise.all([
     prisma.activity.groupBy({ by: ["type"], _count: { _all: true } }),
     prisma.activityEvent.groupBy({ by: ["kind"], _count: { _all: true } }),
@@ -90,6 +109,13 @@ export async function buildSummary() {
       _avg: { dwellMs: true },
       _count: { _all: true },
     }),
+    prisma.requestLog.count(),
+    prisma.requestLog.count({ where: { status: { gte: 400 } } }),
+  ]);
+
+  const [p50DurationMs, p95DurationMs] = await Promise.all([
+    percentile(requestTotal, 0.5),
+    percentile(requestTotal, 0.95),
   ]);
 
   const stored = tally(storedByType, (row) => row.type);
@@ -140,6 +166,16 @@ export async function buildSummary() {
           averageMs: round(row._avg.dwellMs) ?? 0,
         }))
         .sort((a, b) => b.views - a.views || a.path.localeCompare(b.path)),
+    },
+    requests: {
+      total: requestTotal,
+      errors: requestErrors,
+      errorRate:
+        requestTotal === 0
+          ? null
+          : Math.round((requestErrors / requestTotal) * 1000) / 10,
+      p50DurationMs,
+      p95DurationMs,
     },
     events: {
       total: sum(kinds),

@@ -62,6 +62,8 @@ export async function buildSummary() {
     phonemes,
     emptyWordLists,
     lastEvent,
+    pageViewTotals,
+    pageViewsByPath,
   ] = await Promise.all([
     prisma.activity.groupBy({ by: ["type"], _count: { _all: true } }),
     prisma.activityEvent.groupBy({ by: ["kind"], _count: { _all: true } }),
@@ -81,6 +83,12 @@ export async function buildSummary() {
     prisma.activityEvent.findFirst({
       orderBy: { createdAt: "desc" },
       select: { createdAt: true },
+    }),
+    prisma.pageView.aggregate({ _avg: { dwellMs: true }, _count: { _all: true } }),
+    prisma.pageView.groupBy({
+      by: ["path"],
+      _avg: { dwellMs: true },
+      _count: { _all: true },
     }),
   ]);
 
@@ -121,6 +129,17 @@ export async function buildSummary() {
       phonemes,
       /** Drives the "empty word list" warning on the dashboard. */
       emptyWordLists,
+    },
+    engagement: {
+      pageViews: pageViewTotals._count._all,
+      averageTimeOnPageMs: round(pageViewTotals._avg.dwellMs),
+      byPath: pageViewsByPath
+        .map((row) => ({
+          path: row.path,
+          views: row._count._all,
+          averageMs: round(row._avg.dwellMs) ?? 0,
+        }))
+        .sort((a, b) => b.views - a.views || a.path.localeCompare(b.path)),
     },
     events: {
       total: sum(kinds),

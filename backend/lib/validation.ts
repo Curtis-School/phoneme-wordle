@@ -167,6 +167,31 @@ export const activityQuerySchema = z.object({
 
 export type ActivityCreateInput = z.infer<typeof activityCreateSchema>;
 
+// An hour on one page is already implausible for a builder session; beyond that the
+// figure is a tab left open overnight, which would drag the average away from real use.
+const MAX_DWELL_MS = 60 * 60 * 1000;
+
+export const pageViewCreateSchema = z.object({
+  path: text(200).refine((value) => value.startsWith("/"), {
+    error: "must be a root-relative path, e.g. /wordle",
+  }),
+  dwellMs: z
+    .number({ error: "dwellMs must be a number" })
+    .int("dwellMs must be a whole number")
+    .positive("dwellMs must be positive")
+    .max(MAX_DWELL_MS, "dwellMs is implausibly large"),
+  sessionId: text(64).optional(),
+});
+
+export const timeseriesQuerySchema = z.object({
+  days: z.coerce
+    .number({ error: "days must be a number" })
+    .int("days must be a whole number")
+    .min(1)
+    .max(90)
+    .default(30),
+});
+
 export const generateQuerySchema = z.object({
   /** Pin a specific Wordle target instead of drawing one at random. */
   wordId: z.coerce.number().int().positive().optional(),

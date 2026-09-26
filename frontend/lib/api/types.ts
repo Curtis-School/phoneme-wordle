@@ -175,6 +175,42 @@ export type MetricsTimeseries = {
   points: TimeseriesPoint[];
 };
 
+export type AlertSeverity = "error" | "warning";
+
+export type MetricsAlert = {
+  id: string;
+  severity: AlertSeverity;
+  title: string;
+  message: string;
+};
+
+export type MetricsAlerts = {
+  generatedAt: string;
+  counts: Record<AlertSeverity, number>;
+  alerts: MetricsAlert[];
+};
+
+export type RecentEvent = {
+  id: number;
+  kind: string;
+  activityId: number | null;
+  activityName: string | null;
+  activityType: ActivityType | null;
+  difficulty: Difficulty | null;
+  wordListId: number | null;
+  wordListName: string | null;
+  errorCode: string | null;
+  durationMs: number | null;
+  createdAt: string;
+};
+
+export type RecentEvents = {
+  events: RecentEvent[];
+  total: number;
+  limit: number;
+  offset: number;
+};
+
 /** `GET /health` on the API. */
 export type ApiHealth = {
   service: string;

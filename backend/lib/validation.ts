@@ -3,6 +3,7 @@ import { z } from "zod";
 import {
   ACTIVITY_TYPES,
   DIFFICULTIES,
+  EVENT_KINDS,
   SYMBOL_DISPLAYS,
   THEMES,
 } from "@/lib/constants";
@@ -181,6 +182,21 @@ export const pageViewCreateSchema = z.object({
     .positive("dwellMs must be positive")
     .max(MAX_DWELL_MS, "dwellMs is implausibly large"),
   sessionId: text(64).optional(),
+});
+
+export const eventsQuerySchema = z.object({
+  limit: z.coerce
+    .number({ error: "limit must be a number" })
+    .int("limit must be a whole number")
+    .min(1)
+    .max(200)
+    .default(50),
+  offset: z.coerce
+    .number({ error: "offset must be a number" })
+    .int("offset must be a whole number")
+    .min(0)
+    .default(0),
+  kind: z.enum(EVENT_KINDS).optional(),
 });
 
 export const timeseriesQuerySchema = z.object({

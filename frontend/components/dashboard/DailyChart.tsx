@@ -1,9 +1,23 @@
 import type { TimeseriesPoint } from "@/lib/api/types";
 
+export type ChartTone = "succeeded" | "failed";
+
 export type ChartSeries = {
   key: keyof Omit<TimeseriesPoint, "date">;
   label: string;
-  color: string;
+  tone: ChartTone;
+};
+
+// Classes, not fill="var(--token)": CSS variables do not resolve in SVG presentation
+// attributes, so a var() there silently paints the mark black.
+const FILL: Record<ChartTone, string> = {
+  succeeded: "fill-chart-succeeded",
+  failed: "fill-chart-failed",
+};
+
+const SWATCH: Record<ChartTone, string> = {
+  succeeded: "bg-chart-succeeded",
+  failed: "bg-chart-failed",
 };
 
 type DailyChartProps = {
@@ -63,8 +77,7 @@ export function DailyChart({ id, title, points, series }: DailyChartProps) {
           <li key={item.key} className="flex items-center gap-1.5 text-xs text-muted">
             <span
               aria-hidden="true"
-              className="size-2.5 rounded-sm"
-              style={{ background: item.color }}
+              className={`size-2.5 rounded-sm ${SWATCH[item.tone]}`}
             />
             {item.label}
             <span className="font-semibold text-foreground">{total(item.key)}</span>
@@ -85,15 +98,15 @@ export function DailyChart({ id, title, points, series }: DailyChartProps) {
             x2={WIDTH - PAD.right}
             y1={y(max * fraction)}
             y2={y(max * fraction)}
-            stroke="var(--border)"
+            className="stroke-border"
             strokeWidth={1}
           />
         ))}
 
-        <text x={0} y={y(max) + 4} fill="var(--muted)" fontSize={11}>
+        <text x={0} y={y(max) + 4} className="fill-muted" fontSize={11}>
           {max}
         </text>
-        <text x={0} y={y(0) + 4} fill="var(--muted)" fontSize={11}>
+        <text x={0} y={y(0) + 4} className="fill-muted" fontSize={11}>
           0
         </text>
 
@@ -118,7 +131,7 @@ export function DailyChart({ id, title, points, series }: DailyChartProps) {
                 width={barWidth}
                 height={height}
                 rx={2}
-                fill={item.color}
+                className={FILL[item.tone]}
               >
                 <title>{`${shortDate(point.date)}: ${value} ${item.label.toLowerCase()}`}</title>
               </rect>
@@ -131,20 +144,20 @@ export function DailyChart({ id, title, points, series }: DailyChartProps) {
           x2={WIDTH - PAD.right}
           y1={y(0)}
           y2={y(0)}
-          stroke="var(--border-strong)"
+          className="stroke-border-strong"
           strokeWidth={1}
         />
 
         {points.length > 0 ? (
           <>
-            <text x={PAD.left} y={HEIGHT - 8} fill="var(--muted)" fontSize={11}>
+            <text x={PAD.left} y={HEIGHT - 8} className="fill-muted" fontSize={11}>
               {shortDate(points[0].date)}
             </text>
             <text
               x={WIDTH - PAD.right}
               y={HEIGHT - 8}
               textAnchor="end"
-              fill="var(--muted)"
+              className="fill-muted"
               fontSize={11}
             >
               {shortDate(points[points.length - 1].date)}

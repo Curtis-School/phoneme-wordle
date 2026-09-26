@@ -1,9 +1,25 @@
+import { AlertsPanel } from "@/components/dashboard/AlertsPanel";
+import { DailyChart } from "@/components/dashboard/DailyChart";
+import { EVENT_KINDS, EventsTable } from "@/components/dashboard/EventsTable";
 import { HealthTile } from "@/components/dashboard/HealthTile";
 import { StatCard } from "@/components/dashboard/StatCard";
 import { ApiErrorNotice } from "@/components/ui/ApiErrorNotice";
 import { PageShell } from "@/components/ui/PageShell";
-import { ApiClientError, getApiHealth, getMetricsSummary } from "@/lib/api/client";
-import type { ActivityType, MetricsSummary } from "@/lib/api/types";
+import {
+  ApiClientError,
+  getAlerts,
+  getApiHealth,
+  getMetricsSummary,
+  getRecentEvents,
+  getTimeseries,
+} from "@/lib/api/client";
+import type {
+  ActivityType,
+  MetricsAlerts,
+  MetricsSummary,
+  MetricsTimeseries,
+  RecentEvents,
+} from "@/lib/api/types";
 
 export const dynamic = "force-dynamic";
 
@@ -60,12 +76,58 @@ async function loadSummary(): Promise<SummaryResult> {
   }
 }
 
-export default async function DashboardPage() {
-  const [health, result] = await Promise.all([getApiHealth(), loadSummary()]);
+async function loadTimeseries(): Promise<MetricsTimeseries | null> {
+  try {
+    return await getTimeseries(30);
+  } catch {
+    return null;
+  }
+}
+
+async function loadAlerts(): Promise<MetricsAlerts | null> {
+  try {
+    return await getAlerts();
+  } catch {
+    return null;
+  }
+}
+
+const EVENTS_PER_PAGE = 15;
+
+async function loadEvents(page: number, kind?: string): Promise<RecentEvents | null> {
+  try {
+    return await getRecentEvents({
+      limit: EVENTS_PER_PAGE,
+      offset: (page - 1) * EVENTS_PER_PAGE,
+      kind,
+    });
+  } catch {
+    return null;
+  }
+}
+
+export default async function DashboardPage({ searchParams }: PageProps<"/dashboard">) {
+  const { kind, page } = await searchParams;
+  const selectedKind = EVENT_KINDS.find((known) => known === kind);
+  const requestedPage = Number(Array.isArray(page) ? page[0] : page);
+  const currentPage =
+    Number.isInteger(requestedPage) && requestedPage > 0 ? requestedPage : 1;
+
+  const [health, result, timeseries, alerts, events] = await Promise.all([
+    getApiHealth(),
+    loadSummary(),
+    loadTimeseries(),
+    loadAlerts(),
+    loadEvents(currentPage, selectedKind),
+  ]);
 
   return (
     <PageShell title="Dashboard" intro={INTRO}>
       <HealthTile report={health} />
+
+      {alerts ? <AlertsPanel data={alerts} /> : null}
+
+      {timeseries ? <Charts timeseries={timeseries} /> : null}
 
       {result.ok ? (
         <Metrics summary={result.summary} />
@@ -76,7 +138,52 @@ export default async function DashboardPage() {
           hint={result.hint}
         />
       )}
+
+      {events ? (
+        <EventsTable
+          events={events.events}
+          selectedKind={selectedKind}
+          page={currentPage}
+          pageSize={EVENTS_PER_PAGE}
+          total={events.total}
+        />
+      ) : null}
     </PageShell>
+  );
+}
+
+function Charts({ timeseries }: { timeseries: MetricsTimeseries }) {
+  return (
+    <section aria-labelledby="trends-heading" className="flex flex-col gap-3">
+      <h2
+        id="trends-heading"
+        className="text-sm font-semibold uppercase tracking-wide text-muted"
+      >
+        Daily trend
+      </h2>
+      <div className="grid gap-4 lg:grid-cols-2">
+        <DailyChart
+          id="activities-chart"
+          title="Activities created"
+          points={timeseries.points}
+          series={[
+            { key: "activitiesCreated", label: "Created", tone: "succeeded" },
+          ]}
+        />
+        <DailyChart
+          id="generations-chart"
+          title="Puzzles generated"
+          points={timeseries.points}
+          series={[
+            { key: "generationsSucceeded", label: "Succeeded", tone: "succeeded" },
+            { key: "generationsFailed", label: "Failed", tone: "failed" },
+          ]}
+        />
+      </div>
+      <p className="text-xs text-muted">
+        Days are UTC, matching the API&apos;s own buckets.
+      </p>
+    </section>
   );
 }
 

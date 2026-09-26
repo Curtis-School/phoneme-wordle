@@ -14,7 +14,10 @@ import type {
   ApiWordListSummary,
   CreateActivityInput,
   GenerateResponse,
+  MetricsAlerts,
   MetricsSummary,
+  MetricsTimeseries,
+  RecentEvents,
   UpdateActivityInput,
 } from "./types";
 
@@ -224,6 +227,20 @@ export async function deleteWordList(id: number): Promise<void> {
 /** Every figure in the dashboard's KPI block, aggregated by the API from its event log. */
 export async function getMetricsSummary(): Promise<MetricsSummary> {
   return request<MetricsSummary>("/api/metrics/summary");
+}
+
+export async function getTimeseries(days = 30): Promise<MetricsTimeseries> {
+  return request<MetricsTimeseries>("/api/metrics/timeseries", { query: { days } });
+}
+
+export async function getAlerts(): Promise<MetricsAlerts> {
+  return request<MetricsAlerts>("/api/metrics/alerts");
+}
+
+export async function getRecentEvents(
+  params: { limit?: number; offset?: number; kind?: string } = {},
+): Promise<RecentEvents> {
+  return request<RecentEvents>("/api/metrics/events", { query: params });
 }
 
 /** How long to wait for the API's health check before calling it unreachable. */

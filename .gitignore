@@ -16,3 +16,6 @@
 # jmeter output
 /testing/jmeter/results/
 /testing/jmeter/results.md
+
+# lighthouse output
+/testing/lighthouse/

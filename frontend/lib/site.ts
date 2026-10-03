@@ -14,6 +14,10 @@ export const SITE = {
       url: "https://latrobe.zoom.us/rec/share/p-PJAbJvhv7wTDyit_l4ULW6CIwAZgUY8SQtBg6kVIGzk28Z-Xkj-HWtOl3sKoSg.1MZhEB8QU53NEySl",
       passcode: "=^Sath0!",
     },
+    assessment3: {
+      url: "https://latrobe.zoom.us/rec/share/5Cv0fb0FhdlREN3Ih6EhbxdU3_r3IxbvgjQHpX0Ci91qikG0VwxU_mf2nWP7Fxkm.xX9qQ1-L25Hyzoz5",
+      passcode: "pN=.Gu58",
+    },
   },
 } as const;
 

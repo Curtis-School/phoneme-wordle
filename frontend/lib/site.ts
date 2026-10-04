@@ -15,8 +15,8 @@ export const SITE = {
       passcode: "=^Sath0!",
     },
     assessment3: {
-      url: "https://latrobe.zoom.us/rec/share/5Cv0fb0FhdlREN3Ih6EhbxdU3_r3IxbvgjQHpX0Ci91qikG0VwxU_mf2nWP7Fxkm.xX9qQ1-L25Hyzoz5",
-      passcode: "pN=.Gu58",
+      url: "https://latrobe.zoom.us/rec/share/s9h7KCBNnP3PMk1vOlzk-rirtsh_hW-x6ldDPJu9LN6d6qOGXo3tYDvhEuylouPO.Lo2wd8LLOYcziVdw",
+      passcode: "@k%1WTBx",
     },
   },
 } as const;
